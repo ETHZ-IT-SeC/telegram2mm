@@ -27,52 +27,28 @@ use Mojo::Date;
 use Mojo::File;
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use YAML::Tiny qw(LoadFile);
+use IPC::Run qw( run );
 
-# Constants
+###
+### Constants / Hardcoded Telegram to Mattermost mappings
+###
+
 my %tg2mm_type = ( 'message' => 'post' );
 
-# Read config, needs to be first parameter
-my $config_file = shift;
-&usage(1) unless -r $config_file && !-d _;
-my $config = LoadFile($config_file) or &usage(2);
-
-# Output ZIP file, needs to be second parameter
-my $zip_file = shift;
-die "$zip_file already exists" if -e $zip_file;
-
-# Read JSON from whereever it comes from (slurp mode)
-local $/ = undef;
-my $tg_json = <>;
-my $tg = decode_json($tg_json);
-
-# First convert to JSON Lines (aka JSONL)
-my @messages = @{$tg->{messages}};
-
-my $output = '{"type":"version","version":1}'."\n";
-my $i = 0;
-foreach my $msg (@messages) {
-    # Skip group creation for now
-    next if (exists $msg->{action} and $msg->{action} eq 'create_group');
-
-    $msg = transform_msg($msg);
-
-    $output .= encode_json($msg)."\n" if $msg;
-
-    # For debugging: Only import the first n messages or so.
-    last if ++$i > 3;
-}
-
-# Create ZIP file needed by "mmctl import upload"
-my $zip = Archive::Zip->new();
-$zip->addDirectory( 'bulk-export-attachments/' );
-my $jsonl_zip_member = $zip->addString( $output, 'mattermost_import.jsonl' );
-$jsonl_zip_member->desiredCompressionMethod( COMPRESSION_DEFLATED );
-$zip->writeToFileNamed($zip_file) == AZ_OK
-    or die "Write error while writing to $zip_file";
 
 ###
 ### Helper functions
 ###
+
+sub run2json {
+    my ($in, $out, $err);
+    my $good_exitcodes = run(\@_, \$in, \$out, \$err);
+    warn $out;
+    warn $err;
+    die '"'.join(' ', @_).'" exited with '." $exitcode and this output:\n\n$err\n\n$out"
+	unless $good_exitcodes;
+    return decode_json($out);
+}
 
 sub date2epoch {
     # "* 1000" because Mattermost wants milliseconds
@@ -80,11 +56,11 @@ sub date2epoch {
 }
 
 sub transform_msg {
-    my $msg = shift;
+    my ($config, $msg) = @_;
 
     # All messages need to have a "type" field.
     die "Expected field \"type\" not found in ".encode_json($msg)
-	unless exists $msg->{type} and $msg->{type} ne '';
+	unless (exists($msg->{type}) and $msg->{type} ne '');
 
     # Rename type if necessary.
     $msg->{type} = $tg2mm_type{$msg->{type}}
@@ -118,7 +94,7 @@ sub transform_msg {
 
 sub usage {
     print <<EOT;
-Usage: $0 config.yml output.zip [telegram_export.json]
+Usage: $0 config.yml [telegram_export.json]
 
 If no telegram export file is given as second parameter, the telegram
 export is expected to be read from STDIN.
@@ -126,3 +102,83 @@ EOT
     exit (int($_[0]) || 0);
 }
 
+
+###
+### Actual main code
+###
+
+# Read config, needs to be first parameter
+my $config_file = shift;
+&usage(1) unless -r $config_file && !-d _;
+my $config = LoadFile($config_file) or &usage(2);
+
+# Temporary Output ZIP file
+my $tmpdir = $ENV{TMPDIR} // "/tmp";
+my $zip_file = Mojo::File::tempfile("XXXXXXXXX",
+				    DIR => $tmpdir,
+				    SUFFIX => ".zip",
+				    # Just for debugging
+				    UNLINK => 0,
+);
+
+# Read JSON from whereever it comes from (slurp mode)
+local $/ = undef;
+my $tg_json = <>;
+my $tg = decode_json($tg_json);
+
+# First convert to JSON Lines (aka JSONL)
+my @messages = @{$tg->{messages}};
+
+my $output = '{"type":"version","version":1}'."\n";
+my $i = 0;
+foreach my $msg (@messages) {
+    # Skip group creation for now
+    next if (exists $msg->{action} and $msg->{action} eq 'create_group');
+
+    $msg = transform_msg($config, $msg);
+
+    $output .= encode_json($msg)."\n" if $msg;
+}
+
+# Create ZIP file needed by "mmctl import upload"
+my $zip = Archive::Zip->new();
+$zip->addDirectory( 'bulk-export-attachments/' );
+my $jsonl_zip_member = $zip->addString( $output, 'mattermost_import.jsonl' );
+$jsonl_zip_member->desiredCompressionMethod( COMPRESSION_DEFLATED );
+$zip->writeToFileNamed($zip_file->to_string) == AZ_OK
+    or die "Write error while writing to $zip_file";
+
+# Automatically import the ZIP file into Mattermost
+my ($json_return, $in, $out, $err);
+
+# First upload the file
+$json_return = run2json(qw(mmctl import upload), $zip_file, qw(--json));
+my $upload_id = $json_return->[0]{id}
+    or die "Returned ID from upload not found: ".Dumper($json_return);
+
+# Figure out generated file name by grepping for the returned upload
+# id (which is at the start of the generated file name).
+$json_return = run2json(qw(mmctl import list available));
+my $upload_filename = (grep { /^$upload_id/ } @$json_return)[0];
+
+# Start to process that upload
+$json_return = run2json(qw(mmctl import process), $upload_filename, qw(--json));
+if ($json_return->[0]{status} ne 'pending') {
+    die 'Process job state is not "pending": '.Dumper($json_return);
+}
+my $job_id = $json_return->[0]{id}
+    or die "Returned ID from processing not found: ".Dumper($json_return);
+
+# Wait until the import job is finished
+my @mmctl_cmd = (qw(mmctl import job show), $job_id);
+$json_return = run2json(@mmctl_cmd);
+my $job_status = $json_return->[0]{status}
+    or die "Job status not found in returned data: ".Dumper($json_return);
+
+while ($job_status eq 'pending') {
+    sleep (1);
+    $job_status = $json_return->[0]{status}
+	or die "Job status not found in returned data: ".Dumper($json_return);
+}
+
+say 'Import job finished with status "'.$job_status/'".'
