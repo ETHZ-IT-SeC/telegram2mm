@@ -42,10 +42,12 @@ my %tg2mm_type = ( 'message' => 'post' );
 
 sub run2json {
     my ($in, $out, $err);
-    my $good_exitcodes = run(\@_, \$in, \$out, \$err);
-    warn $out;
-    warn $err;
-    die '"'.join(' ', @_).'" exited with '." $exitcode and this output:\n\n$err\n\n$out"
+    my @mmctl_cmd = (@_, qw(--json));
+    my $good_exitcodes = run(\@mmctl_cmd, \$in, \$out, \$err);
+    # Debug mmctl calls
+    #say "STDOUT:\n----\n$out\n----\n";
+    #say "STDERR:\n----\n$err\n----\n";
+    die '"'.join(' ', @_).'" exited with '." $? and this output:\n\n$err\n\n$out"
 	unless $good_exitcodes;
     return decode_json($out);
 }
@@ -152,7 +154,7 @@ $zip->writeToFileNamed($zip_file->to_string) == AZ_OK
 my ($json_return, $in, $out, $err);
 
 # First upload the file
-$json_return = run2json(qw(mmctl import upload), $zip_file, qw(--json));
+$json_return = run2json(qw(mmctl import upload), $zip_file);
 my $upload_id = $json_return->[0]{id}
     or die "Returned ID from upload not found: ".Dumper($json_return);
 
@@ -162,7 +164,7 @@ $json_return = run2json(qw(mmctl import list available));
 my $upload_filename = (grep { /^$upload_id/ } @$json_return)[0];
 
 # Start to process that upload
-$json_return = run2json(qw(mmctl import process), $upload_filename, qw(--json));
+$json_return = run2json(qw(mmctl import process), $upload_filename);
 if ($json_return->[0]{status} ne 'pending') {
     die 'Process job state is not "pending": '.Dumper($json_return);
 }
@@ -175,10 +177,14 @@ $json_return = run2json(@mmctl_cmd);
 my $job_status = $json_return->[0]{status}
     or die "Job status not found in returned data: ".Dumper($json_return);
 
+my $j = 1;
 while ($job_status eq 'pending') {
     sleep (1);
+    $json_return = run2json(@mmctl_cmd);
     $job_status = $json_return->[0]{status}
 	or die "Job status not found in returned data: ".Dumper($json_return);
+    say "[$j] Checking status for job ID $job_id: $job_status";
+    $j++;
 }
 
-say 'Import job finished with status "'.$job_status/'".'
+say 'Import job finished with status "'.$job_status.'".'
