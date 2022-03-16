@@ -79,7 +79,7 @@ sub transform_msg {
 
 	# Flatten text component in case it's an array ref
 	if (ref($msg->{text}) eq 'ARRAY') {
-	    my $new_text = join("\n", map {
+	    my $new_text = join('', map {
 		my $text_element = $_;
 		# if #_ is a hashref
 		if (ref($text_element) eq 'HASH') {
