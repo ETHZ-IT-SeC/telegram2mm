@@ -26,7 +26,7 @@ cat ../ChatExport_2022-03-02/result.json | ./telegram2mm.pl ../import_config.yml
 Configuration
 -------------
 
-`telegram2mm.pl` expects [YAML](https://yaml.org/) written configuration file.
+`telegram2mm.pl` expects a [YAML](https://yaml.org/) written configuration file.
 
 Example configuration file:
 
