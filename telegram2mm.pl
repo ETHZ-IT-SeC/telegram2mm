@@ -35,7 +35,6 @@ use Data::Dumper;
 ###
 
 my %tg2mm_type = ( 'message' => 'post' );
-my @skip_actions = (qw(create_group invite_members));
 
 
 ###
@@ -158,9 +157,8 @@ my @messages = @{$tg->{messages}};
 my $output = '{"type":"version","version":1}'."\n";
 my $i = 0;
 foreach my $msg (@messages) {
-    # Skip group creation for now
-    next if (exists $msg->{action} and
-	     grep { $_ eq $msg->{action} } @skip_actions );
+    # Skip type "service for now
+    next if (exists $msg->{type}) and $msg->{type} eq 'service';
 
     $msg = transform_msg($config, $msg);
 
