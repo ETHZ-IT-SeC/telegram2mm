@@ -96,6 +96,10 @@ sub transform_msg {
 			     exists($text_element->{text}) and
 			     $text_element->{type} eq 'pre') {
 			"\n".'```'."\n".$text_element->{text}."\n".'```'."\n";
+		    } elsif (exists($text_element->{type}) and
+			     exists($text_element->{text}) and
+			     $text_element->{type} eq 'mention_name') {
+			'@'.$config->{users}{'user'.$text_element->{user_id}};
 		    } else {
 			die "Yet unsupported message format (no type, no text or known type): ".Dumper($msg);
 		    }
