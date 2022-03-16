@@ -1,13 +1,14 @@
-Import Telegram Channel History into a Mattermost Channel
-=========================================================
+Import Telegram Group Chat History into a Mattermost Channel
+============================================================
 
 Description
 -----------
 
 The Perl script `telegram2mm.pl` imports a
-[Telegram](https://telegram.org/) group export into a
-[Mattermost](https://mattermost.com/) channel using Mattermost's
-`mmctl import` set of commands.
+[Telegram](https://telegram.org/)
+[group](https://telegram.org/faq?setln=en#q-what-39s-the-difference-between-groups-and-channels)
+export into a [Mattermost](https://mattermost.com/) channel using
+Mattermost's `mmctl import` set of commands.
 
 The tool is currently work in progress and might not yet support all
 functionality used on Telegram.
