@@ -102,6 +102,10 @@ sub transform_msg {
 			'_'.$text_element->{text}.'_';
 		    } elsif (exists($text_element->{type}) and
 			     exists($text_element->{text}) and
+			     $text_element->{type} eq 'underline') {
+			'**_'.$text_element->{text}.'_**';
+		    } elsif (exists($text_element->{type}) and
+			     exists($text_element->{text}) and
 			     $text_element->{type} eq 'pre') {
 			"\n".'```'."\n".$text_element->{text}."\n".'```'."\n";
 		    } elsif (exists($text_element->{type}) and
