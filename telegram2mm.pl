@@ -140,15 +140,25 @@ sub transform_msg {
 	  user      => $config->{users}{$msg->{from_id}},
 	  create_at => date2epoch($msg->{date}),
 	};
-
-	delete $msg->{text};
-	delete $msg->{from};
-	delete $msg->{from_id};
-	delete $msg->{id};
-	delete $msg->{date};
     }
 
     return $msg;
+}
+
+sub attach_replies {
+    my ($config, $msg, $replies) = @_;
+    return unless $msg->{type} eq 'post';
+
+    $msg->{post}{replies} = [];
+
+    foreach my $reply (@$replies) {
+	$reply = transform_msg($config, $reply);
+	# Make a reply out of the message
+	$reply = $reply->{post};
+
+	# Attach the reply to the message
+	push(@{$msg->{post}{replies}}, $reply);
+    }
 }
 
 sub usage {
@@ -175,15 +185,45 @@ sub tg_json_to_mm_json {
     # First convert to JSON Lines (aka JSONL)
     my @messages = @{$tg->{messages}};
 
+    # First track replies as they might be referred to in later (but not
+    # earlier) messages. That way we have the data when the message to
+    # which has been replied to, is processed.
+    my %replies = ();
+    foreach my $msg (@messages) {
+	if (exists $msg->{reply_to_message_id}) {
+	    $replies{$msg->{reply_to_message_id}} //= [];
+	    push(@{$replies{$msg->{reply_to_message_id}}}, $msg);
+	}
+    }
+
+    # The actual conversion loop
     my $output = '{"type":"version","version":1}'."\n";
     my $i = 0;
     foreach my $msg (@messages) {
 	# Skip type "service for now
 	next if (exists $msg->{type}) and $msg->{type} eq 'service';
 
+	# Transform the actual message
 	$msg = transform_msg($config, $msg);
 
-	$output .= encode_json($msg)."\n" if $msg;
+	# Attach potential replies
+	if (exists($msg->{id}) and exists($replies{$msg->{id}})) {
+	    attach_replies($config, $msg, $replies{$msg->{id}});
+	}
+
+	# Only further processs a message if it wasn't a reply and hasn't
+	# been emptied.
+	if ($msg and %$msg and not exists($msg->{reply_to_message_id})) {
+	    # Cleanup
+	    delete $msg->{text};
+	    delete $msg->{from};
+	    delete $msg->{from_id};
+	    delete $msg->{id};
+	    delete $msg->{date};
+
+	    # Actually create the JSON line
+	    $output .= encode_json($msg)."\n"
+	}
     }
 
     return $output;
