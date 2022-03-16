@@ -28,6 +28,7 @@ use Mojo::File;
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use YAML::Tiny qw(LoadFile);
 use IPC::Run qw( run );
+use Data::Dumper;
 
 ###
 ### Constants / Hardcoded Telegram to Mattermost mappings
@@ -187,4 +188,8 @@ while ($job_status eq 'pending') {
     $j++;
 }
 
-say 'Import job finished with status "'.$job_status.'".'
+say 'Import job finished with status "'.$job_status.'".';
+
+if ($job_status eq 'error') {
+    say Dumper($json_return);
+}
