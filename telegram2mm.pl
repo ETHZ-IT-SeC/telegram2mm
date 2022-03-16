@@ -35,6 +35,7 @@ use Data::Dumper;
 ###
 
 my %tg2mm_type = ( 'message' => 'post' );
+my @text_types_to_convert_to_plain_text = (qw(link bot_command));
 
 
 ###
@@ -79,18 +80,19 @@ sub transform_msg {
 	# Flatten text component in case it's an array ref
 	if (ref($msg->{text}) eq 'ARRAY') {
 	    my $new_text = join("\n", map {
+		my $text_element = $_;
 		# if #_ is a hashref
-		if (ref eq 'HASH') {
-		    if (exists($_->{type}) and
-			exists($_->{text}) and
-			$_->{type} eq 'link') {
-			$_->{text}
+		if (ref($text_element) eq 'HASH') {
+		    if (exists($text_element->{type}) and
+			exists($text_element->{text}) and
+			grep { $text_element->{type} eq $_ } @text_types_to_convert_to_plain_text) {
+			$text_element->{text}
 		    } else {
-			die "Yet unsupported message format (no type, no text or type is not link): ".Dumper($msg);
+			die "Yet unsupported message format (no type, no text or known type): ".Dumper($msg);
 		    }
 		# if $_ is no reference
-		} elsif (ref eq '') {
-		    $_
+		} elsif (ref($text_element) eq '') {
+		    $text_element
 		} else {
 		    die "Yet unsupported message format (text element is neithe hashref not scalar): ".Dumper($msg);
 		}
