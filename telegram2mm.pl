@@ -207,7 +207,7 @@ my $job_status = $json_return->[0]{status}
     or die "Job status not found in returned data: ".Dumper($json_return);
 
 my $j = 1;
-while ($job_status eq 'pending') {
+while ($job_status eq 'pending' or $job_status eq 'in_progress') {
     sleep (1);
     $json_return = run2json(@mmctl_cmd);
     $job_status = $json_return->[0]{status}
