@@ -158,7 +158,7 @@ my $zip_file = Mojo::File::tempfile("XXXXXXXXX",
 				    DIR => $tmpdir,
 				    SUFFIX => ".zip",
 				    # Just for debugging
-				    UNLINK => 0,
+				    #UNLINK => 0,
 );
 
 # Read JSON from whereever it comes from (slurp mode)
