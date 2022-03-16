@@ -154,7 +154,7 @@ my $config = LoadFile($config_file) or &usage(2);
 
 # Temporary Output ZIP file
 my $tmpdir = $ENV{TMPDIR} // "/tmp";
-my $zip_file = Mojo::File::tempfile("XXXXXXXXX",
+my $zip_file = Mojo::File::tempfile("telegram2mm_XXXXXXXXX",
 				    DIR => $tmpdir,
 				    SUFFIX => ".zip",
 				    # Just for debugging
