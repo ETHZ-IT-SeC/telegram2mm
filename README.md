@@ -10,8 +10,25 @@ The Perl script `telegram2mm.pl` imports a
 export into a [Mattermost](https://mattermost.com/) channel using
 Mattermost's `mmctl import` set of commands.
 
+
+TODO
+----
+
 The tool is currently work in progress and might not yet support all
 functionality used on Telegram.
+
+### High Priority
+
+- [ ] Support for replies
+- [ ] Support for images
+- [ ] Support for videos
+
+### Low Priority
+
+- [ ] Support for reactions
+- [ ] Support for voice messages
+- [ ] Support for video messages
+
 
 Synopsis
 --------
