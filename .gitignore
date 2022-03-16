@@ -1,0 +1,9 @@
+# Editor leftovers
+*~
+*.sw?
+.#*
+
+# Data files to avoid them being committed to the repo by accident
+*.jsonl
+*.json
+*.zip
