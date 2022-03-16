@@ -87,6 +87,10 @@ sub transform_msg {
 			exists($text_element->{text}) and
 			grep { $text_element->{type} eq $_ } @text_types_to_convert_to_plain_text) {
 			$text_element->{text}
+		    } elsif (exists($text_element->{type}) and
+			     exists($text_element->{text}) and
+			     $text_element->{type} eq 'code') {
+			' `'.$text_element->{text}.'` ';
 		    } else {
 			die "Yet unsupported message format (no type, no text or known type): ".Dumper($msg);
 		    }
