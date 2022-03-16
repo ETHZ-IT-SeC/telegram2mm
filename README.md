@@ -28,7 +28,7 @@ Configuration
 
 `telegram2mm.pl` expects a [YAML](https://yaml.org/) written configuration file.
 
-Example configuration file:
+### Example configuration file
 
 ```yaml
 # telegram2mm import configuration
@@ -47,6 +47,15 @@ import_into:
   team: your-team-name
   channel: town-square
 ```
+
+The `user<telegram_user_id>` keywords are the values in the `from_id`
+JSON field in the chat export file. The value behind them is the user
+name (without the `@`) of the according person on the Mattermost
+server.
+
+Lines which have a `#` as first non-blank character are comments.
+
+### Chat Export File
 
 The chat export file is what you get when you click on the
 per-group-chat menu (top right three dots menu in the [Telegram
