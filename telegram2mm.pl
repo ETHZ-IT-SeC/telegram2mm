@@ -77,6 +77,28 @@ sub transform_msg {
 	    return undef;
 	}
 
+	# Flatten text component in case it's an array ref
+	if (ref($msg->{text}) eq 'ARRAY') {
+	    my $new_text = join("\n", map {
+		# if #_ is a hashref
+		if (ref eq 'HASH') {
+		    if (exists($_->{type}) and
+			exists($_->{text}) and
+			$_->{type} eq 'link') {
+			$_->{text}
+		    } else {
+			die "Yet unsupported message format (no type, no text or type is not link): ".Dumper($msg);
+		    }
+		# if $_ is no reference
+		} elsif (ref eq '') {
+		    $_
+		} else {
+		    die "Yet unsupported message format (text element is neithe hashref not scalar): ".Dumper($msg);
+		}
+				} @{$msg->{text}});
+	    $msg->{text} = $new_text;
+	}
+
 	# Add post subelement
 	$msg->{post} = {
 	  team      => $config->{import_into}{team},
