@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ "$1 $2 $3" != "export list --json" ]; then
+    exit 1;
+fi
+
+echo '[
+  "sr83ztmhrjneiffottxrpkjota_export.zip"
+]
+'
+
+echo "There are 1 exports on https://mm.example.com/" 1>&2
