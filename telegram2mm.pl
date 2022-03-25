@@ -38,6 +38,9 @@ my %tg2mm_type = ( 'message' => 'post' );
 my @text_types_to_convert_to_plain_text =
     (qw(link bot_command mention email text_link phone hashtag cashtag));
 
+# Call the main routine if we're not sourced. Allows unit testing of
+# functions in here.
+main(shift) unless caller(0);
 
 ###
 ### Helper functions
@@ -163,86 +166,89 @@ EOT
 ### Actual main code
 ###
 
-# Read config, needs to be first parameter
-my $config_file = shift;
-&usage(1) unless -r $config_file && !-d _;
-my $config = LoadFile($config_file) or &usage(2);
+sub main {
+    # Read config, needs to be first parameter
+    my $config_file = shift;
+    &usage(1) unless -r $config_file && !-d _;
+    my $config = LoadFile($config_file) or &usage(2);
 
-# Temporary Output ZIP file
-my $tmpdir = $ENV{TMPDIR} // "/tmp";
-my $zip_file = Mojo::File::tempfile("telegram2mm_XXXXXXXXX",
-				    DIR => $tmpdir,
-				    SUFFIX => ".zip",
-				    # Just for debugging
-				    #UNLINK => 0,
-);
+    # Temporary Output ZIP file
+    my $tmpdir = $ENV{TMPDIR} // "/tmp";
+    my $zip_file = Mojo::File::tempfile("telegram2mm_XXXXXXXXX",
+					DIR => $tmpdir,
+					SUFFIX => ".zip",
+					# Just for debugging
+					#UNLINK => 0,
+    );
 
-# Read JSON from whereever it comes from (slurp mode)
-local $/ = undef;
-my $tg_json = <>;
-my $tg = decode_json($tg_json);
+    # Read JSON from whereever it comes from (slurp mode)
+    local $/ = undef;
+    my $tg_json = <>;
+    my $tg = decode_json($tg_json);
 
-# First convert to JSON Lines (aka JSONL)
-my @messages = @{$tg->{messages}};
+    # First convert to JSON Lines (aka JSONL)
+    my @messages = @{$tg->{messages}};
 
-my $output = '{"type":"version","version":1}'."\n";
-my $i = 0;
-foreach my $msg (@messages) {
-    # Skip type "service for now
-    next if (exists $msg->{type}) and $msg->{type} eq 'service';
+    my $output = '{"type":"version","version":1}'."\n";
+    my $i = 0;
+    foreach my $msg (@messages) {
+	# Skip type "service for now
+	next if (exists $msg->{type}) and $msg->{type} eq 'service';
 
-    $msg = transform_msg($config, $msg);
+	$msg = transform_msg($config, $msg);
 
-    $output .= encode_json($msg)."\n" if $msg;
-}
+	$output .= encode_json($msg)."\n" if $msg;
+    }
 
-# Create ZIP file needed by "mmctl import upload"
-my $zip = Archive::Zip->new();
-$zip->addDirectory( 'bulk-export-attachments/' );
-my $jsonl_zip_member = $zip->addString( $output, 'mattermost_import.jsonl' );
-$jsonl_zip_member->desiredCompressionMethod( COMPRESSION_DEFLATED );
-$zip->writeToFileNamed($zip_file->to_string) == AZ_OK
-    or die "Write error while writing to $zip_file";
+    # Create ZIP file needed by "mmctl import upload"
+    my $zip = Archive::Zip->new();
+    $zip->addDirectory( 'bulk-export-attachments/' );
+    my $jsonl_zip_member = $zip->addString( $output, 'mattermost_import.jsonl' );
+    $jsonl_zip_member->desiredCompressionMethod( COMPRESSION_DEFLATED );
+    $zip->writeToFileNamed($zip_file->to_string) == AZ_OK
+	or die "Write error while writing to $zip_file";
 
-# Automatically import the ZIP file into Mattermost
-my ($json_return, $in, $out, $err);
+    # Automatically import the ZIP file into Mattermost
+    my ($json_return, $in, $out, $err);
 
-# First upload the file
-$json_return = run2json(qw(mmctl import upload), $zip_file);
-my $upload_id = $json_return->[0]{id}
-    or die "Returned ID from upload not found: ".Dumper($json_return);
+    # First upload the file
+    $json_return = run2json(qw(mmctl import upload), $zip_file);
+    my $upload_id = $json_return->[0]{id}
+	or die "Returned ID from upload not found: ".Dumper($json_return);
 
-# Figure out generated file name by grepping for the returned upload
-# id (which is at the start of the generated file name).
-$json_return = run2json(qw(mmctl import list available));
-my $upload_filename = (grep { /^$upload_id/ } @$json_return)[0];
+    # Figure out generated file name by grepping for the returned
+    # upload id (which is at the start of the generated file name).
+    $json_return = run2json(qw(mmctl import list available));
+    my $upload_filename = (grep { /^$upload_id/ } @$json_return)[0];
 
-# Start to process that upload
-$json_return = run2json(qw(mmctl import process), $upload_filename);
-if ($json_return->[0]{status} ne 'pending') {
-    die 'Process job state is not "pending": '.Dumper($json_return);
-}
-my $job_id = $json_return->[0]{id}
-    or die "Returned ID from processing not found: ".Dumper($json_return);
+    # Start to process that upload
+    $json_return = run2json(qw(mmctl import process), $upload_filename);
+    if ($json_return->[0]{status} ne 'pending') {
+	die 'Process job state is not "pending": '.Dumper($json_return);
+    }
+    my $job_id = $json_return->[0]{id}
+	or die "Returned ID from processing not found: ".Dumper($json_return);
 
-# Wait until the import job is finished
-my @mmctl_cmd = (qw(mmctl import job show), $job_id);
-$json_return = run2json(@mmctl_cmd);
-my $job_status = $json_return->[0]{status}
-    or die "Job status not found in returned data: ".Dumper($json_return);
-
-my $j = 1;
-while ($job_status eq 'pending' or $job_status eq 'in_progress') {
-    sleep (1);
+    # Wait until the import job is finished
+    my @mmctl_cmd = (qw(mmctl import job show), $job_id);
     $json_return = run2json(@mmctl_cmd);
-    $job_status = $json_return->[0]{status}
+    my $job_status = $json_return->[0]{status}
 	or die "Job status not found in returned data: ".Dumper($json_return);
-    say "[$j] Checking status for job ID $job_id: $job_status";
-    $j++;
-}
 
-say 'Import job finished with status "'.$job_status.'".';
+    my $j = 1;
+    while ($job_status eq 'pending' or $job_status eq 'in_progress') {
+	sleep (1);
+	$json_return = run2json(@mmctl_cmd);
+	$job_status = $json_return->[0]{status}
+	    or die "Job status not found in returned data: ".Dumper($json_return);
+	say "[$j] Checking status for job ID $job_id: $job_status";
+	$j++;
+    }
 
-if ($job_status eq 'error') {
-    say Dumper($json_return);
+    say 'Import job finished with status "'.$job_status.'".';
+
+    if ($job_status eq 'error') {
+	say Dumper($json_return);
+    }
 }
+# End of main() routine.
