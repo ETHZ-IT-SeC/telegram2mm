@@ -155,6 +155,10 @@ sub attach_replies {
 
 	# Attach the reply to the message
 	push(@{$msg->{post}{replies}}, $reply);
+
+	if (exists($reply->{id}) and exists($replies->{$reply->{id}})) {
+	    attach_replies($config, $msg, $replies->{$reply->{id}});
+	}
     }
 }
 
