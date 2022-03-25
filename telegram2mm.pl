@@ -31,6 +31,12 @@ use IPC::Run qw( run );
 use Data::Dumper;
 
 ###
+### Temporary debug configuration
+###
+
+my $import_limit = 0;
+
+###
 ### Constants / Hardcoded Telegram to Mattermost mappings
 ###
 
@@ -160,6 +166,8 @@ sub attach_replies {
 	    attach_replies($config, $msg, $replies->{$reply->{id}});
 	}
     }
+
+    warn Dumper $msg;
 }
 
 sub usage {
@@ -238,7 +246,15 @@ foreach my $msg (@messages) {
 	# Actually create the JSON line
 	$output .= encode_json($msg)."\n"
     }
+
+    # For debugging: Only import the first n messages or so.
+    if ($import_limit and (++$i > $import_limit-2)) {
+	last;
+    }
 }
+
+#die Dumper \@messages;
+#die;
 
 # Create ZIP file needed by "mmctl import upload"
 my $zip = Archive::Zip->new();
