@@ -203,6 +203,17 @@ sub load_config {
     return $config;
 }
 
+sub recursively_find_reply_to_message_id {
+    my ($msg_id, $reply_to) = @_;
+    if (exists $reply_to->{$msg_id}) {
+	return
+	    recursively_find_reply_to_message_id($reply_to->{$msg_id},
+						 $reply_to);
+    } else {
+	return $msg_id;
+    }
+}
+
 sub tg_json_to_mm_json {
     my ($config, $tg_json) = @_;
     my $tg = decode_json($tg_json);
@@ -213,11 +224,27 @@ sub tg_json_to_mm_json {
     # First track replies as they might be referred to in later (but not
     # earlier) messages. That way we have the data when the message to
     # which has been replied to, is processed.
+    my %reply_to = ();
+    my %message_by_id = ();
+    # Track forward chain first, as we need to follow their chains in the next step
+    foreach my $msg (@messages) {
+	warn Dumper $msg;
+	$message_by_id{$msg->{id}} = $msg;
+	if (exists $msg->{reply_to_message_id}) {
+	    $reply_to{$msg->{id}} = $msg->{reply_to_message_id};
+	}
+    }
+
     my %replies = ();
     foreach my $msg (@messages) {
 	if (exists $msg->{reply_to_message_id}) {
-	    $replies{$msg->{reply_to_message_id}} //= [];
-	    push(@{$replies{$msg->{reply_to_message_id}}}, $msg);
+	    # Follow the chain
+	    my $top_most_parent =
+		recursively_find_reply_to_message_id($msg->{reply_to_message_id},
+						     \%reply_to);
+	    # Backward
+	    $replies{$top_most_parent} //= [];
+	    push(@{$replies{$top_most_parent}}, $msg);
 	}
     }
 
