@@ -21,11 +21,25 @@ is_deeply( run2json(qw(mmctl export list)),
     );
 $ENV{PATH} = $default_path;
 
-# Check Config Loading and Message Transformation
+# Check Config Loading
 my $config;
 ok( $config = load_config("$FindBin::Bin/mock/import_config.yml"),
     "Loading the example config worked" );
+is_deeply( $config,
+	   {
+	       'users' => {
+		   'user123' => 'abc',
+		   'user789' => 'ghi',
+		   'user456' => 'def'
+	       },
+	       'import_into' => {
+		   'team' => 'example',
+		   'channel' => 'town square'
+	       }
+	   },
+	   "Config is read as expected" );
 
+# Check and Message Transformation
 is_deeply( transform_msg(
 	       $config,
 	       {
