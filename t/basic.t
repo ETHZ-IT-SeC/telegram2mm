@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use utf8;
 use Test::More;
 use FindBin;
 
@@ -60,6 +61,88 @@ is_deeply( transform_msg(
 		       'create_at' => 1647324371000,
 		   }},
 	   'A simple message is transformed as expected' );
+is_deeply( transform_msg(
+	       $config,
+	       {
+		   'id' => 123456,
+		   'type' => 'message',
+		   'date' => '2022-03-15T06:06:11',
+		   'from' => 'A. B. Cexample',
+		   'from_id' => 'user123',
+		   'text' => [
+		       {
+			   'text' => '/me',
+			   'type' => 'bot_command'
+		       },
+		       ' says ',
+		       {
+			   'text' => 'something italic',
+			   'type' => 'italic'
+		       },
+		       ' to ',
+		       {
+			   'text' => 'Anna',
+			   'user_id' => 123,
+			   'type' => 'mention_name'
+		       },
+		       ' with umläuts and ',
+		       {
+			   'text' => 'boldly emphasized',
+			   'type' => 'bold'
+		       },
+		       ' text as well as some ',
+		       {
+			   'text' => 'code snippet',
+			   'type' => 'code'
+		       },
+		       ' and some ',
+		       {
+			   'text' => '$cashtag',
+			   'type' => 'cashtag'
+		       },
+		       ', pointing to ',
+		       {
+			   'text' => 'https://www.example.com/',
+			   'type' => 'link'
+		       },
+		       ' and ',
+		       {
+			   'text' => 'www.example.org',
+			   'href' => 'https://www.example.org/',
+			   'type' => 'text_link'
+		       },
+		       ' as well as mentioning ',
+		       {
+			   'text' => 'example@example.com',
+			   'type' => 'email'
+		       },
+		       ', ',
+		       {
+			   'text' => 'not',
+			   'type' => 'underline'
+		       },
+		       ' ',
+		       {
+			   'text' => '.org',
+			   'type' => 'strikethrough'
+		       },
+
+		       # TODO: mention, pre, phone
+		       # TODO: really two blanks around "code" snippets?
+		   ]
+	       } ),
+	       {
+		   'type' => 'post',
+		   'post' => {
+		       'team' => 'example',
+		       'channel' => 'town square',
+		       'user' => 'abc',
+		       'message' =>
+			   '/me says _something italic_ to @abc with umläuts and **boldly emphasized** text as well as some  `code snippet`  and some $cashtag, pointing to https://www.example.com/ and www.example.org as well as mentioning example@example.com, **_not_** ~~.org~~',
+		       'create_at' => 1647324371000,
+		   }
+	       },
+	   'A complex message is transformed as expected' );
 
 
 done_testing();
