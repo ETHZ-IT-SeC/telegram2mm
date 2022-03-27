@@ -204,7 +204,7 @@ is_deeply( transform_msg(
 			   # TODO: Really three newlines?
 		   }
 	       },
-	   'A complex message is transformed as expected' );
+	   'A message with pre-formatted code is transformed as expected' );
 
 # Check JSON transformation of a simple chat
 is_deeply( tg_json_to_mm_json($config, <<'EOT' ),
