@@ -23,7 +23,7 @@ $ENV{PATH} = $default_path;
 
 # Check Config Loading and Message Transformation
 my $config;
-ok( $config = LoadFile("$FindBin::Bin/mock/import_config.yml"),
+ok( $config = load_config("$FindBin::Bin/mock/import_config.yml"),
     "Loading the example config worked" );
 
 is_deeply( transform_msg(

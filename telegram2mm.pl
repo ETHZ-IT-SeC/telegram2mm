@@ -161,6 +161,13 @@ EOT
     exit (int($_[0]) || 0);
 }
 
+sub load_config {
+    my $config_file = shift;
+    &usage(1) unless -r $config_file && !-d _;
+    my $config = LoadFile($config_file) or &usage(2);
+    return $config;
+}
+
 
 ###
 ### Actual main code
@@ -168,9 +175,7 @@ EOT
 
 sub main {
     # Read config, needs to be first parameter
-    my $config_file = shift;
-    &usage(1) unless -r $config_file && !-d _;
-    my $config = LoadFile($config_file) or &usage(2);
+    my $config = load_config(shift);
 
     # Temporary Output ZIP file
     my $tmpdir = $ENV{TMPDIR} // "/tmp";
