@@ -168,6 +168,27 @@ sub load_config {
     return $config;
 }
 
+sub tg_json_to_mm_json {
+    my ($config, $tg_json) = @_;
+    my $tg = decode_json($tg_json);
+
+    # First convert to JSON Lines (aka JSONL)
+    my @messages = @{$tg->{messages}};
+
+    my $output = '{"type":"version","version":1}'."\n";
+    my $i = 0;
+    foreach my $msg (@messages) {
+	# Skip type "service for now
+	next if (exists $msg->{type}) and $msg->{type} eq 'service';
+
+	$msg = transform_msg($config, $msg);
+
+	$output .= encode_json($msg)."\n" if $msg;
+    }
+
+    return $output;
+}
+
 
 ###
 ### Actual main code
@@ -189,21 +210,8 @@ sub main {
     # Read JSON from whereever it comes from (slurp mode)
     local $/ = undef;
     my $tg_json = <>;
-    my $tg = decode_json($tg_json);
 
-    # First convert to JSON Lines (aka JSONL)
-    my @messages = @{$tg->{messages}};
-
-    my $output = '{"type":"version","version":1}'."\n";
-    my $i = 0;
-    foreach my $msg (@messages) {
-	# Skip type "service for now
-	next if (exists $msg->{type}) and $msg->{type} eq 'service';
-
-	$msg = transform_msg($config, $msg);
-
-	$output .= encode_json($msg)."\n" if $msg;
-    }
+    my $output = tg_json_to_mm_json($config, $tg_json);
 
     # Create ZIP file needed by "mmctl import upload"
     my $zip = Archive::Zip->new();

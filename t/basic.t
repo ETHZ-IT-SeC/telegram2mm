@@ -175,4 +175,69 @@ is_deeply( transform_msg(
 	       },
 	   'A complex message is transformed as expected' );
 
+is_deeply( transform_msg(
+	       $config,
+	       {
+		   'id' => 123456,
+		   'type' => 'message',
+		   'date' => '2022-03-15T06:06:11',
+		   'from' => 'A. B. Cexample',
+		   'from_id' => 'user123',
+		   'text' => [
+		       "Some multiline code snippet:\n\n",
+		       {
+			   'text' => "foo\nbar\nfnord",
+			   'type' => 'pre'
+		       }
+		   ]
+	       } ),
+	       {
+		   'type' => 'post',
+		   'post' => {
+		       'team' => 'example',
+		       'channel' => 'town square',
+		       'user' => 'abc',
+		       'message' =>
+			   "Some multiline code snippet:\n\n\n".'```'.
+			   "\nfoo\nbar\nfnord\n".'```'."\n",
+			   'create_at' => 1647324371000,
+			   # TODO: Really three newlines?
+		   }
+	       },
+	   'A complex message is transformed as expected' );
+
+# Check JSON transformation of a simple chat
+is_deeply( tg_json_to_mm_json($config, <<'EOT' ),
+{
+ "name": "telegram2mm Example Chat Group",
+ "type": "private_supergroup",
+ "id": 123456,
+ "messages": [
+  {
+   "id": 12345678,
+   "type": "message",
+   "date": "2022-03-15T06:06:11",
+   "from": "A. B. Cexample",
+   "from_id": "user123",
+   "text": "Morning!"
+  },
+  {
+   "id": 12345679,
+   "type": "message",
+   "date": "2022-03-15T06:07:51",
+   "from": "D. E. Fexample",
+   "from_id": "user456",
+   "text": "Mornin'!"
+  }
+ ]
+}
+EOT
+	   <<'EOT',
+{"type":"version","version":1}
+{"post":{"channel":"town square","create_at":1647324371000,"message":"Morning!","team":"example","user":"abc"},"type":"post"}
+{"post":{"channel":"town square","create_at":1647324471000,"message":"Mornin'!","team":"example","user":"def"},"type":"post"}
+EOT
+	   'A whole JSON TG import is transformed to MM JSONL as expected' );
+
+
 done_testing();
