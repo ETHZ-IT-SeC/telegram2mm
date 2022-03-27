@@ -208,7 +208,7 @@ is_deeply( transform_msg(
 	   'A message with pre-formatted code is transformed as expected' );
 
 # Check JSON transformation of a simple chat
-is_deeply( tg_json_to_mm_json($config, <<'EOT' ),
+is_deeply( tg_json_to_mm_jsonl($config, <<'EOT' ),
 {
  "name": "telegram2mm Example Chat Group",
  "type": "private_supergroup",
@@ -240,7 +240,7 @@ EOT
 EOT
 	   'A whole JSON TG import is transformed to MM JSONL as expected' );
 
-is( tg_json_to_mm_json($config, <<'EOT' ),
+is( tg_json_to_mm_jsonl($config, <<'EOT' ),
 {
  "name": "telegram2mm Example Chat Group",
  "type": "private_supergroup",
@@ -272,7 +272,7 @@ EOT
 EOT
 	   'A whole JSON TG import containing replies is transformed to MM JSONL as expected' );
 
-is( tg_json_to_mm_json($config, <<'EOT' ),
+is( tg_json_to_mm_jsonl($config, <<'EOT' ),
 {
  "name": "telegram2mm Example Chat Group",
  "type": "private_supergroup",

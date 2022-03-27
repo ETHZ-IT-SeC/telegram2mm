@@ -214,7 +214,7 @@ sub recursively_find_reply_to_message_id {
     }
 }
 
-sub tg_json_to_mm_json {
+sub tg_json_to_mm_jsonl {
     my ($config, $tg_json) = @_;
     my $tg = decode_json($tg_json);
 
@@ -296,7 +296,8 @@ sub main {
     local $/ = undef;
     my $tg_json = <>;
 
-    my $output = tg_json_to_mm_json($config, $tg_json);
+    # Main conversion routine
+    my $output = tg_json_to_mm_jsonl($config, $tg_json);
 
     # Create ZIP file needed by "mmctl import upload"
     my $zip = Archive::Zip->new();
