@@ -240,7 +240,7 @@ EOT
 EOT
 	   'A whole JSON TG import is transformed to MM JSONL as expected' );
 
-is_deeply( tg_json_to_mm_json($config, <<'EOT' ),
+is( tg_json_to_mm_json($config, <<'EOT' ),
 {
  "name": "telegram2mm Example Chat Group",
  "type": "private_supergroup",
