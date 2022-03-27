@@ -228,7 +228,6 @@ sub tg_json_to_mm_jsonl {
     my %message_by_id = ();
     # Track forward chain first, as we need to follow their chains in the next step
     foreach my $msg (@messages) {
-	warn Dumper $msg;
 	$message_by_id{$msg->{id}} = $msg;
 	if (exists $msg->{reply_to_message_id}) {
 	    $reply_to{$msg->{id}} = $msg->{reply_to_message_id};
