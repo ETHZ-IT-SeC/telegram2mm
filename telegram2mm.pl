@@ -155,6 +155,8 @@ sub attach_replies {
 	$reply = transform_msg($config, $reply);
 	# Make a reply out of the message
 	$reply = $reply->{post};
+	delete($reply->{channel});
+	delete($reply->{team});
 
 	# Attach the reply to the message
 	push(@{$msg->{post}{replies}}, $reply);
