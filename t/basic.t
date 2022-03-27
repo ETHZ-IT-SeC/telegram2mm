@@ -313,5 +313,29 @@ EOT
 EOT
 	   'A whole JSON TG import containing nested replies is transformed to MM JSONL as expected' );
 
+is_deeply( transform_msg(
+	       $config,
+	       {
+		   'id' => 123456,
+		   'type' => 'message',
+		   'date' => '2022-03-15T06:06:11',
+		   'from' => 'A. B. Cexample',
+		   'from_id' => 'user123',
+		   'text' => '',
+		   'file' => 'stickers/sticker.webp',
+		   'thumbnail' => 'stickers/sticker.webp_thumb.jpg',
+		   'media_type' => 'sticker',
+		   'sticker_emoji' => '🤦‍♂️',
+	       }, {}),
+	       {
+		   'type' => 'post',
+		   'post' => {
+		       'team' => 'example',
+		       'channel' => 'town square',
+		       'user' => 'abc',
+		       'message' => '🤦‍♂️',
+		       'create_at' => 1647324371000,
+		   }},
+	   'A sticker message is transformed as expected' );
 
 done_testing();

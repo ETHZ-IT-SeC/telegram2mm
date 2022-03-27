@@ -130,12 +130,15 @@ sub transform_msg {
 		    }
 		# if $_ is no reference
 		} elsif (ref($text_element) eq '') {
-		    $text_element
+		    $text_element;
 		} else {
 		    die "Yet unsupported message format (text element is neithe hashref not scalar): ".Dumper($msg);
 		}
 				} @{$msg->{text}});
 	    $msg->{text} = $new_text;
+	} elsif ($msg->{text} eq '' and
+		 exists($msg->{sticker_emoji})) {
+	    $msg->{text} = $msg->{sticker_emoji};
 	}
 
 	# Add post subelement
@@ -151,6 +154,10 @@ sub transform_msg {
 	delete $msg->{text};
 	delete $msg->{from};
 	delete $msg->{date};
+	delete $msg->{sticker_emoji};
+	delete $msg->{file};
+	delete $msg->{thumbnail};
+	delete $msg->{media_type};
 	unless ($replies->{$msg->{id}}) {
 	    delete $msg->{from_id};
 	    delete $msg->{id};
