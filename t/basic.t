@@ -239,5 +239,37 @@ EOT
 EOT
 	   'A whole JSON TG import is transformed to MM JSONL as expected' );
 
+is_deeply( tg_json_to_mm_json($config, <<'EOT' ),
+{
+ "name": "telegram2mm Example Chat Group",
+ "type": "private_supergroup",
+ "id": 123456,
+ "messages": [
+  {
+   "id": 12345678,
+   "type": "message",
+   "date": "2022-03-15T06:06:11",
+   "from": "A. B. Cexample",
+   "from_id": "user123",
+   "text": "Morning!"
+  },
+  {
+   "id": 12345679,
+   "type": "message",
+   "date": "2022-03-15T06:07:51",
+   "from": "D. E. Fexample",
+   "from_id": "user456",
+   "text": "Mornin'!",
+   "reply_to_message_id": 12345678
+  }
+ ]
+}
+EOT
+	   <<'EOT',
+{"type":"version","version":1}
+{"post":{"channel":"town square","create_at":1647324371000,"message":"Morning!","replies":[{"create_at":1647324471000,"message":"Mornin'!","user":"def"}],"team":"example","user":"abc"},"type":"post"}
+EOT
+	   'A whole JSON TG import containing replies is transformed to MM JSONL as expected' );
+
 
 done_testing();
