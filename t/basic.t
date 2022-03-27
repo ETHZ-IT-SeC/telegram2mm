@@ -127,7 +127,7 @@ is_deeply( transform_msg(
 			   'type' => 'strikethrough'
 		       },
 
-		       # TODO: mention, pre, phone
+		       # TODO: mention, phone
 		       # TODO: really two blanks around "code" snippets?
 		   ]
 	       } ),
@@ -144,5 +144,35 @@ is_deeply( transform_msg(
 	       },
 	   'A complex message is transformed as expected' );
 
+is_deeply( transform_msg(
+	       $config,
+	       {
+		   'id' => 123456,
+		   'type' => 'message',
+		   'date' => '2022-03-15T06:06:11',
+		   'from' => 'A. B. Cexample',
+		   'from_id' => 'user123',
+		   'text' => [
+		       "Some multiline code snippet:\n\n",
+		       {
+			   'text' => "foo\nbar\nfnord",
+			   'type' => 'pre'
+		       }
+		   ]
+	       } ),
+	       {
+		   'type' => 'post',
+		   'post' => {
+		       'team' => 'example',
+		       'channel' => 'town square',
+		       'user' => 'abc',
+		       'message' =>
+			   "Some multiline code snippet:\n\n\n".'```'.
+			   "\nfoo\nbar\nfnord\n".'```'."\n",
+			   'create_at' => 1647324371000,
+			   # TODO: Really three newlines?
+		   }
+	       },
+	   'A complex message is transformed as expected' );
 
 done_testing();
