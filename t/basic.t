@@ -51,7 +51,7 @@ is_deeply( transform_msg(
 		   'from' => 'A. B. Cexample',
 		   'from_id' => 'user123',
 		   'text' => 'Morning!'
-	       } ),
+	       }, {}),
 	       {
 		   'type' => 'post',
 		   'post' => {
@@ -131,7 +131,7 @@ is_deeply( transform_msg(
 		       # TODO: mention, phone
 		       # TODO: really two blanks around "code" snippets?
 		   ]
-	       } ),
+	       }, {}),
 	       {
 		   'type' => 'post',
 		   'post' => {
@@ -160,7 +160,7 @@ is_deeply( transform_msg(
 			   'type' => 'pre'
 		       }
 		   ]
-	       } ),
+	       }, {}),
 	       {
 		   'type' => 'post',
 		   'post' => {
@@ -191,7 +191,7 @@ is_deeply( transform_msg(
 			   'type' => 'pre'
 		       }
 		   ]
-	       } ),
+	       }, {}),
 	       {
 		   'type' => 'post',
 		   'post' => {

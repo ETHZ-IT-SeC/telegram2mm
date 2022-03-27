@@ -64,7 +64,7 @@ sub date2epoch {
 }
 
 sub transform_msg {
-    my ($config, $msg) = @_;
+    my ($config, $msg, $replies) = @_;
 
     # All messages need to have a "type" field.
     die "Expected field \"type\" not found in ".encode_json($msg)
@@ -75,6 +75,12 @@ sub transform_msg {
 	if exists $tg2mm_type{$msg->{type}};
 
     if ($msg->{type} eq "post") {
+	# Simply return the existing object if the message already has
+	# been transformed due to being a reply.
+	if (exists($msg->{post}) and ref($msg->{post}) eq 'HASH') {
+	    return $msg;
+	}
+
 	# Skip this message with a warning if the user is unknown
 	unless (exists $config->{users}{$msg->{from_id}}) {
 	    warn "User ID ".$msg->{from_id}." unknown, skipping this message\n";
@@ -140,6 +146,15 @@ sub transform_msg {
 	  user      => $config->{users}{$msg->{from_id}},
 	  create_at => date2epoch($msg->{date}),
 	};
+
+	# Cleanup
+	delete $msg->{text};
+	delete $msg->{from};
+	delete $msg->{date};
+	unless ($replies->{$msg->{id}}) {
+	    delete $msg->{from_id};
+	    delete $msg->{id};
+	}
     }
 
     return $msg;
@@ -149,10 +164,11 @@ sub attach_replies {
     my ($config, $msg, $replies) = @_;
     return unless $msg->{type} eq 'post';
 
+    my $my_replies = $replies->{$msg->{id}};
     $msg->{post}{replies} = [];
 
-    foreach my $reply (@$replies) {
-	$reply = transform_msg($config, $reply);
+    foreach my $reply (@$my_replies) {
+	$reply = transform_msg($config, $reply, $replies);
 	# Make a reply out of the message
 	$reply = $reply->{post};
 	delete($reply->{channel});
@@ -164,6 +180,9 @@ sub attach_replies {
 	if (exists($reply->{id}) and exists($replies->{$reply->{id}})) {
 	    attach_replies($config, $msg, $replies->{$reply->{id}});
 	}
+
+	delete($msg->{id});
+	delete($msg->{from_id});
     }
 }
 
@@ -210,23 +229,16 @@ sub tg_json_to_mm_json {
 	next if (exists $msg->{type}) and $msg->{type} eq 'service';
 
 	# Transform the actual message
-	$msg = transform_msg($config, $msg);
+	$msg = transform_msg($config, $msg, \%replies);
 
 	# Attach potential replies
 	if (exists($msg->{id}) and exists($replies{$msg->{id}})) {
-	    attach_replies($config, $msg, $replies{$msg->{id}});
+	    attach_replies($config, $msg, \%replies);
 	}
 
 	# Only further processs a message if it wasn't a reply and hasn't
 	# been emptied.
 	if ($msg and %$msg and not exists($msg->{reply_to_message_id})) {
-	    # Cleanup
-	    delete $msg->{text};
-	    delete $msg->{from};
-	    delete $msg->{from_id};
-	    delete $msg->{id};
-	    delete $msg->{date};
-
 	    # Actually create the JSON line
 	    $output .= encode_json($msg)."\n"
 	}
