@@ -35,8 +35,6 @@ Synopsis
 
 ```
 ./telegram2mm.pl ../import_config.yml ../ChatExport_2022-03-02/result.json
-./telegram2mm.pl ../import_config.yml < ../ChatExport_2022-03-02/result.json
-cat ../ChatExport_2022-03-02/result.json | ./telegram2mm.pl ../import_config.yml
 ```
 
 
@@ -85,7 +83,7 @@ Example Run
 -----------
 
 ```
-$ ./telegram2mm.pl ../import_config.yml < ../ChatExport_2022-03-02/result.json
+$ ./telegram2mm.pl ../import_config.yml ../ChatExport_2022-03-02/result.json
 [1] Checking status for job ID yuy3gj8e5fnj8d3eugt4gkx5me: pending
 [2] Checking status for job ID yuy3gj8e5fnj8d3eugt4gkx5me: pending
 [3] Checking status for job ID yuy3gj8e5fnj8d3eugt4gkx5me: pending
