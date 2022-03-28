@@ -19,7 +19,7 @@ functionality used on Telegram.
 
 ### High Priority
 
-- [ ] Support for replies
+- [x] Support for replies
 - [ ] Support for images
 - [ ] Support for videos
 
