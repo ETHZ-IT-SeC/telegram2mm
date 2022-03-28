@@ -119,6 +119,13 @@ Requirements
   * [YAML::Tiny](https://metacpan.org/dist/YAML-Tiny)
 
 
+Test Suite
+----------
+
+There's a TAP-based test suite in the `t/` subdirectory. You can run
+it with e.g. `prove t/*.t` — the tool `prove` comes with Perl.
+
+
 Author, License and Copyright
 -----------------------------
 
