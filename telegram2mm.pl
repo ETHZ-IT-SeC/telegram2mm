@@ -36,7 +36,7 @@ use Data::Dumper;
 
 my %tg2mm_type = ( 'message' => 'post' );
 my @text_types_to_convert_to_plain_text =
-    (qw(link bot_command mention email text_link phone hashtag cashtag));
+    (qw(link bot_command mention email text_link phone hashtag cashtag bank_card));
 
 # Call the main routine if we're not sourced. Allows unit testing of
 # functions in here.

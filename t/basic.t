@@ -127,6 +127,11 @@ is_deeply( transform_msg(
 			   'text' => '.org',
 			   'type' => 'strikethrough'
 		       },
+		       ' ',
+		       {
+			   'text' => '2022051201133400',
+			   'type' => 'bank_card'
+		       },
 
 		       # TODO: mention, phone
 		       # TODO: really two blanks around "code" snippets?
@@ -139,7 +144,7 @@ is_deeply( transform_msg(
 		       'channel' => 'town square',
 		       'user' => 'abc',
 		       'message' =>
-			   '/me says _something italic_ to @abc with umläuts and **boldly emphasized** text as well as some  `code snippet`  and some $cashtag, pointing to https://www.example.com/ and www.example.org as well as mentioning example@example.com, **_not_** ~~.org~~',
+			   '/me says _something italic_ to @abc with umläuts and **boldly emphasized** text as well as some  `code snippet`  and some $cashtag, pointing to https://www.example.com/ and www.example.org as well as mentioning example@example.com, **_not_** ~~.org~~ 2022051201133400',
 		       'create_at' => 1647324371000,
 		   }
 	       },
