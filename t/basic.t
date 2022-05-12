@@ -318,6 +318,7 @@ EOT
 EOT
 	   'A whole JSON TG import containing nested replies is transformed to MM JSONL as expected' );
 
+# Stickers
 is_deeply( transform_msg(
 	       $config,
 	       {
