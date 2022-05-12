@@ -41,9 +41,24 @@ Synopsis
 Configuration
 -------------
 
+### Login first
+
+Before you first use this tool or if the get the error message
+`Error: : Invalid or expired session, please login again.`, you need
+to make `mmctl` to store a login token first:
+
+```
+mmctl auth login https://mattermost.example.org/ --name local --username adminusername
+```
+
+you first need to login again.
+
+
+### Configuration file
+
 `telegram2mm.pl` expects a [YAML](https://yaml.org/) written configuration file.
 
-### Example configuration file
+#### Example configuration file
 
 ```yaml
 # telegram2mm import configuration
@@ -62,6 +77,8 @@ import_into:
   team: your-team-name
   channel: town-square
 ```
+
+#### Configuration File Explanation
 
 The `user<telegram_user_id>` keywords are the values in the `from_id`
 JSON field in the chat export file. The value behind them is the user
