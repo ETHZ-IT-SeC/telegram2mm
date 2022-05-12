@@ -28,6 +28,9 @@ use Mojo::File;
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use YAML::Tiny qw(LoadFile);
 use IPC::Run qw( run );
+use DateTime;
+use DateTime::TimeZone;
+use DateTime::Format::ISO8601;
 use Data::Dumper;
 
 ###
@@ -37,6 +40,10 @@ use Data::Dumper;
 my %tg2mm_type = ( 'message' => 'post' );
 my @text_types_to_convert_to_plain_text =
     (qw(link bot_command mention email text_link phone hashtag cashtag bank_card));
+
+# Global variable which can be overriden via configuration file.
+my $tzobj = DateTime::TimeZone->new( name => 'Etc/UTC');
+
 
 # Call the main routine if we're not sourced. Allows unit testing of
 # functions in here.
@@ -59,8 +66,26 @@ sub run2json {
 }
 
 sub date2epoch {
+    my $tg_time = shift;
+
+    # First we must figure out if the time given in here is DST or
+    # not. The time stamp in Telegrams result.json looks like this
+    # one, e.g. without time zone or DST flag: "2022-05-23T13:23:42"
+    #
+    # For that we do assume UTC, calculate the offset and then declare
+    # this as the offset of the time stamp. This will make the
+    # timestamp wrong twice a year for as manu hours as the offset
+    # is. For most countries in Europe this is a few hours hour per
+    # year. IMHO acceptable compared to the effort needed to and brain
+    # knot caused by trying to fix this properly. DST must die!
+    my $dt_tg_time = DateTime::Format::ISO8601->parse_datetime($tg_time);
+    my $tz_offset =
+	DateTime::TimeZone->offset_as_string(
+	    $tzobj->offset_for_datetime($dt_tg_time), ':');
+    my $export_time = "$tg_time$tz_offset";
+
     # "* 1000" because Mattermost wants milliseconds
-    return Mojo::Date->new(shift)->epoch()*1000;
+    return Mojo::Date->new($export_time)->epoch()*1000;
 }
 
 sub transform_msg {
@@ -207,6 +232,21 @@ sub load_config {
     my $config_file = shift;
     &usage(1) unless -r $config_file && !-d _;
     my $config = LoadFile($config_file) or &usage(2);
+
+    # Timezone handling
+    if (exists $config->{timezone}) {
+	my $tz = $config->{timezone};
+
+	# Check if the timezone name in the config file is valid
+	unless (DateTime::TimeZone->is_valid_name($tz)) {
+	    die "\"$tz\" is not a valid timezone name. ".
+		'Use e.g. "UTC" or "Europe/Busingen".'."\n";
+	}
+
+	# Recreate the global timezone object for later use
+	$tzobj = DateTime::TimeZone->new( name => $tz );
+    }
+
     return $config;
 }
 

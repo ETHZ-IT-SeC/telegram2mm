@@ -20,8 +20,8 @@ functionality used on Telegram.
 ### High Priority
 
 - [x] Support for replies
-- [ ] Workaround for Telegram's export neither containing timezones
-      nor DST flags. (So currently UTC is silently assumed.)
+- [x] Workaround for Telegram's export neither containing timezones
+      nor DST flags.
 - [ ] Support for images
 - [ ] Support for videos
 
@@ -78,6 +78,8 @@ users:
 import_into:
   team: your-team-name
   channel: town-square
+
+timezone: Europe/Busingen
 ```
 
 #### Configuration File Explanation
@@ -88,6 +90,10 @@ name (without the `@`) of the according person on the Mattermost
 server.
 
 Lines which have a `#` as first non-blank character are comments.
+
+The timezone is the timezone which should be assumed for the time
+stamps in Telegram's chat export.  If no timezone is given, UTC is
+assumed.
 
 ### Chat Export File
 
@@ -134,6 +140,12 @@ Requirements
   * [Archive::Zip](https://metacpan.org/dist/Archive-Zip)
 
   * [YAML::Tiny](https://metacpan.org/dist/YAML-Tiny)
+
+  * [DateTime](https://metacpan.org/dist/DateTime)
+
+  * [DateTime::TimeZone](https://metacpan.org/dist/DateTime-TimeZone)
+
+  * [DateTime::Format::ISO8601](https://metacpan.org/dist/DateTime-Format-ISO8601)
 
 
 Test Suite

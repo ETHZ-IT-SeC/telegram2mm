@@ -1,0 +1,17 @@
+# telegram2mm test suite import configuration
+---
+users:
+  # A. B. Cexample
+  user123: abc
+
+  # D. E. Fexample
+  user456: def
+
+  # G. H. Ixample
+  user789: ghi
+
+import_into:
+  team: example
+  channel: town square
+
+timezone: Europe/Busingen
