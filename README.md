@@ -20,6 +20,8 @@ functionality used on Telegram.
 ### High Priority
 
 - [x] Support for replies
+- [ ] Workaround for Telegram's export neither containing timezones
+      nor DST flags. (So currently UTC is silently assumed.)
 - [ ] Support for images
 - [ ] Support for videos
 
