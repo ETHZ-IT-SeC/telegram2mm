@@ -47,7 +47,7 @@ my $tzobj = DateTime::TimeZone->new( name => 'Etc/UTC');
 
 # Call the main routine if we're not sourced. Allows unit testing of
 # functions in here.
-main(shift) unless caller(0);
+main(@ARGV) unless caller(0);
 
 ###
 ### Helper functions
@@ -328,6 +328,8 @@ sub tg_json_to_mm_jsonl {
 sub main {
     # Read config, needs to be first parameter
     my $config = load_config(shift);
+    my $tg_json_file = shift;
+    my $tg_json_mojo = Mojo::File->new($tg_json_file);
 
     # Temporary Output ZIP file
     my $tmpdir = $ENV{TMPDIR} // "/tmp";
@@ -339,8 +341,7 @@ sub main {
     );
 
     # Read JSON from whereever it comes from (slurp mode)
-    local $/ = undef;
-    my $tg_json = <>;
+    my $tg_json = $tg_json_mojo->slurp();
 
     # Main conversion routine
     my $output = tg_json_to_mm_jsonl($config, $tg_json);
