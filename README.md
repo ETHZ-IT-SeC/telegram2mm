@@ -8,7 +8,8 @@ The Perl script `telegram2mm.pl` imports a
 [Telegram](https://telegram.org/)
 [group](https://telegram.org/faq?setln=en#q-what-39s-the-difference-between-groups-and-channels)
 export into a [Mattermost](https://mattermost.com/) channel using
-Mattermost's `mmctl import` set of commands.
+Mattermost's `mmctl import` set of commands (not the older `mattermost
+import` set of commands).
 
 
 TODO
@@ -174,3 +175,13 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see https://www.gnu.org/licenses/.
+
+See also
+--------
+
+* [telegram-to-mattermost](https://git.veone.net/msounkere/telegram-to-mattermost/):
+  a similar tool written in Python which I only discovered late in the
+  development process. (Looking at the commit messages, the
+  development-style is not very convincing with about the 20 last
+  commit messages being "Push final version ..." and most other commit
+  messages have been used multiple times in a row, too.)
