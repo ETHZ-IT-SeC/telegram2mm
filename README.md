@@ -32,6 +32,15 @@ functionality used on Telegram.
 - [ ] Support for voice messages
 - [ ] Support for video messages
 
+### Untested
+
+- [ ] Bots in groups
+
+### Not planned to be supported
+
+- Import of users
+- Channel creation
+
 
 Synopsis
 --------
