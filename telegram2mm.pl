@@ -44,6 +44,26 @@ my @text_types_to_convert_to_plain_text =
 # Global variable which can be overriden via configuration file.
 my $tzobj = DateTime::TimeZone->new( name => 'Etc/UTC');
 
+###
+### Global settings
+###
+
+# It seems as if the Telegram export only contains file names in
+# UTF-8, so assume that for now. Otherwise Archive::ZIP doesn't create
+# correct ZIP archives:
+#
+# Wide character in print at /usr/lib/x86_64-linux-gnu/perl-base/IO/Handle.pm line 157.
+# Wide character in print at /usr/lib/x86_64-linux-gnu/perl-base/IO/Handle.pm line 157.
+#
+# $ unzip -l /tmp/telegram2mm_BcUyuEF0C.zip
+# warning [/tmp/telegram2mm_BcUyuEF0C.zip]:  6 extra bytes at beginning or within zipfile
+#   (attempting to process anyway)
+# error [/tmp/telegram2mm_BcUyuEF0C.zip]:  start of central directory not found;
+#   zipfile corrupt.
+#   (please check that you have transferred or created the zipfile in the
+#   appropriate BINARY mode and that you have compiled UnZip properly)
+#
+$Archive::Zip::UNICODE = 1;
 
 # Call the main routine if we're not sourced. Allows unit testing of
 # functions in here.
