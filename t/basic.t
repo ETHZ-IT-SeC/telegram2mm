@@ -344,4 +344,70 @@ is_deeply( transform_msg(
 		   }},
 	   'A sticker message is transformed as expected' );
 
+# Attachements
+is_deeply( transform_msg(
+	       $config,
+	       {
+		   'id' => 123456,
+		   'type' => 'message',
+		   'date' => '2022-03-15T06:06:11',
+		   'from' => 'A. B. Cexample',
+		   'from_id' => 'user123',
+		   'text' => '',
+		   'file' => 'files/example-image.png',
+		   'thumbnail' => 'files/example-image.png_thumb.jpg',
+		   'mime_type' => 'image/png',
+		   'width' => 300,
+		   'height' => 200,
+		   'text' => "A file"
+	       }, {}),
+	       {
+		   'type' => 'post',
+		   'post' => {
+		       'team' => 'example',
+		       'channel' => 'town square',
+		       'user' => 'abc',
+		       'message' => 'A file',
+		       'create_at' => 1647324371000,
+		   },
+		   'props' => { 'attachments' => [] },
+		   'attachments' => [
+		       {
+			   'path' => 'files/example-image.png'
+		       }
+		   ]
+	       },
+	   'A message with file attachement is transformed as expected' );
+is_deeply( transform_msg(
+	       $config,
+	       {
+		   'id' => 123456,
+		   'type' => 'message',
+		   'date' => '2022-03-15T06:06:11',
+		   'from' => 'A. B. Cexample',
+		   'from_id' => 'user123',
+		   'text' => '',
+		   'photo' => 'photos/example-image.jpg',
+		   'width' => 300,
+		   'height' => 200,
+		   'text' => "A photo"
+	       }, {}),
+	       {
+		   'type' => 'post',
+		   'post' => {
+		       'team' => 'example',
+		       'channel' => 'town square',
+		       'user' => 'abc',
+		       'message' => 'A photo',
+		       'create_at' => 1647324371000,
+		   },
+		   'props' => { 'attachments' => [] },
+		   'attachments' => [
+		       {
+			   'path' => 'photos/example-image.jpg'
+		       }
+		   ]
+	       },
+	   'A message with photo attachement is transformed as expected' );
+
 done_testing();

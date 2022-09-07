@@ -21,6 +21,7 @@
 use strict;
 use warnings;
 use 5.010;
+use utf8;
 
 use Mojo::JSON qw(decode_json encode_json);
 use Mojo::Date;
@@ -32,6 +33,7 @@ use DateTime;
 use DateTime::TimeZone;
 use DateTime::Format::ISO8601;
 use Data::Dumper;
+use File::Rename;
 
 ###
 ### Constants / Hardcoded Telegram to Mattermost mappings
@@ -109,7 +111,7 @@ sub date2epoch {
 }
 
 sub transform_msg {
-    my ($config, $msg, $replies) = @_;
+    my ($config, $msg, $replies, $attachments) = @_;
 
     # All messages need to have a "type" field.
     die "Expected field \"type\" not found in ".encode_json($msg)
@@ -195,12 +197,35 @@ sub transform_msg {
 	  create_at => date2epoch($msg->{date}),
 	};
 
+	if (exists($msg->{file}) and
+	    not (exists($msg->{media_type}) and $msg->{media_type} eq 'sticker')) {
+	    $msg->{attachments} //= [];
+	    $msg->{props} //= { attachments => [] },
+	    # Add metadata to message object
+	    push(@{$msg->{attachments}}, { 'path' => $msg->{file} });
+	    # Remember file to being added to ZIP file later
+	    push(@$attachments, $msg->{file});
+	}
+
+	if (exists($msg->{photo})) {
+	    $msg->{attachments} //= [];
+	    $msg->{props} //= { attachments => [] },
+	    # Add metadata to message object
+	    push(@{$msg->{attachments}}, { 'path' => $msg->{photo} });
+	    # Remember file to being added to ZIP file later
+	    push(@$attachments, $msg->{photo});
+	}
+
 	# Cleanup
 	delete $msg->{text};
 	delete $msg->{from};
 	delete $msg->{date};
 	delete $msg->{sticker_emoji};
 	delete $msg->{file};
+	delete $msg->{photo};
+	delete $msg->{width};
+	delete $msg->{height};
+	delete $msg->{mime_type};
 	delete $msg->{thumbnail};
 	delete $msg->{media_type};
 	unless ($replies->{$msg->{id}}) {
@@ -212,15 +237,28 @@ sub transform_msg {
     return $msg;
 }
 
+sub sanitize_attachment_file_name {
+    my ($filename, $basedir) = @_;
+    if ($filename !~ m(^[-A-Za-z0-9_@=+:.,/]+$)) {
+	my $newname = $filename;
+	rename(
+	    [ $filename ],
+	    sub { $_ =~ s([^/A-Za-z0-9_\@=+:.,-])(_)g }
+	    );
+    } else {
+	return $filename;
+    }
+}
+
 sub attach_replies {
-    my ($config, $msg, $replies) = @_;
+    my ($config, $msg, $replies, $attachments) = @_;
     return unless $msg->{type} eq 'post';
 
     my $my_replies = $replies->{$msg->{id}};
     $msg->{post}{replies} = [];
 
     foreach my $reply (@$my_replies) {
-	$reply = transform_msg($config, $reply, $replies);
+	$reply = transform_msg($config, $reply, $replies, $attachments);
 	# Make a reply out of the message
 	$reply = $reply->{post};
 	delete($reply->{channel});
@@ -282,7 +320,7 @@ sub recursively_find_reply_to_message_id {
 }
 
 sub tg_json_to_mm_jsonl {
-    my ($config, $tg_json) = @_;
+    my ($config, $tg_json, $attachements) = @_;
     my $tg = decode_json($tg_json);
 
     # First convert to JSON Lines (aka JSONL)
@@ -322,11 +360,11 @@ sub tg_json_to_mm_jsonl {
 	next if (exists $msg->{type}) and $msg->{type} eq 'service';
 
 	# Transform the actual message
-	$msg = transform_msg($config, $msg, \%replies);
+	$msg = transform_msg($config, $msg, \%replies, $attachements);
 
 	# Attach potential replies
 	if (exists($msg->{id}) and exists($replies{$msg->{id}})) {
-	    attach_replies($config, $msg, \%replies);
+	    attach_replies($config, $msg, \%replies, $attachements);
 	}
 
 	# Only further processs a message if it wasn't a reply and hasn't
@@ -350,6 +388,10 @@ sub main {
     my $config = load_config(shift);
     my $tg_json_file = shift;
     my $tg_json_mojo = Mojo::File->new($tg_json_file);
+    my @attachments = ();
+    my $pwd = `pwd`; chomp($pwd);
+    $config->{attachement_base_dir} = $pwd.'/'.$tg_json_mojo->dirname;
+
 
     # Temporary Output ZIP file
     my $tmpdir = $ENV{TMPDIR} // "/tmp";
@@ -364,15 +406,39 @@ sub main {
     my $tg_json = $tg_json_mojo->slurp();
 
     # Main conversion routine
-    my $output = tg_json_to_mm_jsonl($config, $tg_json);
+    my $output = tg_json_to_mm_jsonl($config, $tg_json, \@attachments);
+
+    #die Dumper \@attachments;
 
     # Create ZIP file needed by "mmctl import upload"
     my $zip = Archive::Zip->new();
-    $zip->addDirectory( 'bulk-export-attachments/' );
+
+    foreach my $dir (qw(photos files video_files voice_messages)) {
+	#say "$zip_file: Creating \"$dir\"";
+	$zip->addDirectory( $dir );
+    }
+
+    do {
+	no warnings 'utf8';
+
+    # foreach my $attachment (@attachments) {
+    # 	say "$zip_file: Adding \"$attachment\".";
+    # 	my $added_file = $zip->addFile(
+    # 	    $config->{attachement_base_dir}.'/'.$attachment,
+    # 	    $attachment,
+    # 	    COMPRESSION_LEVEL_NONE
+    # 	    );
+    # }
+
     my $jsonl_zip_member = $zip->addString( $output, 'mattermost_import.jsonl' );
     $jsonl_zip_member->desiredCompressionMethod( COMPRESSION_DEFLATED );
+    say "Writing \"$zip_file\".";
     $zip->writeToFileNamed($zip_file->to_string) == AZ_OK
 	or die "Write error while writing to $zip_file";
+
+    #die "$zip_file:\n\n".`ls -lh $zip_file`;
+    #die "$zip_file:\n\n".`als $zip_file; ls -lh $zip_file; file $zip_file; strings $zip_file|head`;
+    };
 
     # Automatically import the ZIP file into Mattermost
     my ($json_return, $in, $out, $err);

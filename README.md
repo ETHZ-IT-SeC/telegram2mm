@@ -157,6 +157,8 @@ Requirements
 
   * [DateTime::Format::ISO8601](https://metacpan.org/dist/DateTime-Format-ISO8601)
 
+  * [File::Rename](https://metacpan.org/dist/File-Rename)
+
 
 Test Suite
 ----------
