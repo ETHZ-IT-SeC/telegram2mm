@@ -196,3 +196,7 @@ See also
   development-style is not very convincing with about the 20 last
   commit messages being "Push final version ..." and most other commit
   messages have been used multiple times in a row, too.)
+
+* [whatsapp-mattermost](https://github.com/witchi/whatsapp-mattermost):
+  a similar tool written in PHP to import WhatsApp chats into
+  Mattermost.
