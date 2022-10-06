@@ -320,7 +320,7 @@ sub recursively_find_reply_to_message_id {
 }
 
 sub tg_json_to_mm_jsonl {
-    my ($config, $tg_json, $attachements) = @_;
+    my ($config, $tg_json, $attachments) = @_;
     my $tg = decode_json($tg_json);
 
     # First convert to JSON Lines (aka JSONL)
@@ -360,11 +360,11 @@ sub tg_json_to_mm_jsonl {
 	next if (exists $msg->{type}) and $msg->{type} eq 'service';
 
 	# Transform the actual message
-	$msg = transform_msg($config, $msg, \%replies, $attachements);
+	$msg = transform_msg($config, $msg, \%replies, $attachments);
 
 	# Attach potential replies
 	if (exists($msg->{id}) and exists($replies{$msg->{id}})) {
-	    attach_replies($config, $msg, \%replies, $attachements);
+	    attach_replies($config, $msg, \%replies, $attachments);
 	}
 
 	# Only further processs a message if it wasn't a reply and hasn't
@@ -390,7 +390,7 @@ sub main {
     my $tg_json_mojo = Mojo::File->new($tg_json_file);
     my @attachments = ();
     my $pwd = `pwd`; chomp($pwd);
-    $config->{attachement_base_dir} = $pwd.'/'.$tg_json_mojo->dirname;
+    $config->{attachment_base_dir} = $pwd.'/'.$tg_json_mojo->dirname;
 
 
     # Temporary Output ZIP file
@@ -424,7 +424,7 @@ sub main {
     # foreach my $attachment (@attachments) {
     # 	say "$zip_file: Adding \"$attachment\".";
     # 	my $added_file = $zip->addFile(
-    # 	    $config->{attachement_base_dir}.'/'.$attachment,
+    # 	    $config->{attachment_base_dir}.'/'.$attachment,
     # 	    $attachment,
     # 	    COMPRESSION_LEVEL_NONE
     # 	    );

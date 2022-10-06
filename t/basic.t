@@ -344,7 +344,7 @@ is_deeply( transform_msg(
 		   }},
 	   'A sticker message is transformed as expected' );
 
-# Attachements
+# Attachments
 is_deeply( transform_msg(
 	       $config,
 	       {
@@ -377,7 +377,7 @@ is_deeply( transform_msg(
 		       }
 		   ]
 	       },
-	   'A message with file attachement is transformed as expected' );
+	   'A message with file attachment is transformed as expected' );
 is_deeply( transform_msg(
 	       $config,
 	       {
@@ -408,6 +408,6 @@ is_deeply( transform_msg(
 		       }
 		   ]
 	       },
-	   'A message with photo attachement is transformed as expected' );
+	   'A message with photo attachment is transformed as expected' );
 
 done_testing();
