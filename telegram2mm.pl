@@ -245,6 +245,7 @@ sub transform_msg {
 	}
     }
 
+    #warn Dumper $msg;
     return $msg;
 }
 
@@ -410,7 +411,7 @@ sub main {
 					DIR => $tmpdir,
 					SUFFIX => ".zip",
 					# Just for debugging
-					#UNLINK => 0,
+					UNLINK => 0,
     );
 
     # Read JSON from whereever it comes from (slurp mode)
@@ -448,7 +449,7 @@ sub main {
 	or die "Write error while writing to $zip_file";
 
     #die "$zip_file:\n\n".`ls -lh $zip_file`;
-    #die "$zip_file:\n\n".`als $zip_file; ls -lh $zip_file; file $zip_file; strings $zip_file|head`;
+    #die "$zip_file:\n\n".`als $zip_file; ls -lh $zip_file; file $zip_file`;
     };
 
     # Automatically import the ZIP file into Mattermost
