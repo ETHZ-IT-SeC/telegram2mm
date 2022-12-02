@@ -210,7 +210,7 @@ sub transform_msg {
 	    $msg->{post}{props} //= { attachments => [] },
 	    # Add metadata to message object
 	    push(@{$msg->{post}{attachments}}, {
-		'path' => $config->{attachment_base_dir}.'/'.$msg->{file}
+		'path' => $msg->{file}
 	    });
 	    # Remember file to being added to ZIP file later
 	    push(@$attachments, $msg->{file});
@@ -221,7 +221,7 @@ sub transform_msg {
 	    $msg->{post}{props} //= { attachments => [] },
 	    # Add metadata to message object
 	    push(@{$msg->{post}{attachments}}, {
-		'path' => $config->{attachment_base_dir}.'/'.$msg->{photo}
+		'path' => $msg->{photo}
 	    });
 	    # Remember file to being added to ZIP file later
 	    push(@$attachments, $msg->{photo});
