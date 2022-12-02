@@ -76,12 +76,19 @@ main(@ARGV) unless caller(0);
 ###
 
 sub run2json {
-    my ($in, $out, $err);
+    my ($good_exitcodes, $in, $out, $err);
     my @mmctl_cmd = (@_, qw(--json));
-    my $good_exitcodes = run(\@mmctl_cmd, \$in, \$out, \$err);
-    # Debug mmctl calls
-    #say "STDOUT:\n----\n$out\n----\n";
-    #say "STDERR:\n----\n$err\n----\n";
+    do {
+	if ($err) {
+	    sleep 1;
+	    warn "Retry after $err\n";
+	}
+	$good_exitcodes = run(\@mmctl_cmd, \$in, \$out, \$err);
+	# Debug mmctl calls
+	#say "STDOUT:\n----\n$out\n----\n";
+	#say "STDERR:\n----\n$err\n----\n";
+    } until ($err !~ /connection re(fused|set by peer)/i);
+
     die '"'.join(' ', @_).'" exited with '." $? and this output:\n\n$err\n\n$out"
 	unless $good_exitcodes;
     return decode_json($out);
