@@ -199,19 +199,23 @@ sub transform_msg {
 
 	if (exists($msg->{file}) and
 	    not (exists($msg->{media_type}) and $msg->{media_type} eq 'sticker')) {
-	    $msg->{attachments} //= [];
-	    $msg->{props} //= { attachments => [] },
+	    $msg->{post}{attachments} //= [];
+	    $msg->{post}{props} //= { attachments => [] },
 	    # Add metadata to message object
-	    push(@{$msg->{attachments}}, { 'path' => $msg->{file} });
+	    push(@{$msg->{post}{attachments}}, {
+		'path' => $config->{attachment_base_dir}.'/'.$msg->{file}
+	    });
 	    # Remember file to being added to ZIP file later
 	    push(@$attachments, $msg->{file});
 	}
 
 	if (exists($msg->{photo})) {
-	    $msg->{attachments} //= [];
-	    $msg->{props} //= { attachments => [] },
+	    $msg->{post}{attachments} //= [];
+	    $msg->{post}{props} //= { attachments => [] },
 	    # Add metadata to message object
-	    push(@{$msg->{attachments}}, { 'path' => $msg->{photo} });
+	    push(@{$msg->{post}{attachments}}, {
+		'path' => $config->{attachment_base_dir}.'/'.$msg->{photo}
+	    });
 	    # Remember file to being added to ZIP file later
 	    push(@$attachments, $msg->{photo});
 	}
@@ -414,21 +418,21 @@ sub main {
     my $zip = Archive::Zip->new();
 
     foreach my $dir (qw(photos files video_files voice_messages)) {
-	#say "$zip_file: Creating \"$dir\"";
-	$zip->addDirectory( $dir );
+	say "$zip_file: Creating \"data/$dir\"";
+	$zip->addDirectory( "data/$dir" );
     }
 
     do {
 	no warnings 'utf8';
 
-    # foreach my $attachment (@attachments) {
-    # 	say "$zip_file: Adding \"$attachment\".";
-    # 	my $added_file = $zip->addFile(
-    # 	    $config->{attachment_base_dir}.'/'.$attachment,
-    # 	    $attachment,
-    # 	    COMPRESSION_LEVEL_NONE
-    # 	    );
-    # }
+    foreach my $attachment (@attachments) {
+	say "$zip_file: Adding \"$attachment\".";
+	my $added_file = $zip->addFile(
+	    $config->{attachment_base_dir}.'/'.$attachment,
+	    "data/$attachment",
+	    COMPRESSION_LEVEL_NONE
+	    );
+    }
 
     my $jsonl_zip_member = $zip->addString( $output, 'mattermost_import.jsonl' );
     $jsonl_zip_member->desiredCompressionMethod( COMPRESSION_DEFLATED );
