@@ -434,12 +434,18 @@ sub main {
 	no warnings 'utf8';
 
     foreach my $attachment (@attachments) {
-	say "$zip_file: Adding \"$attachment\".";
-	my $added_file = $zip->addFile(
-	    $config->{attachment_base_dir}.'/'.$attachment,
-	    "data/$attachment",
-	    COMPRESSION_LEVEL_NONE
-	    );
+        # Handle "(File unavailable, please try again later)" files in
+        # Telegram export.
+        if (-e $config->{attachment_base_dir}.'/'.$attachment) {
+            say "$zip_file: Adding \"$attachment\".";
+            my $added_file = $zip->addFile(
+                $config->{attachment_base_dir}.'/'.$attachment,
+                "data/$attachment",
+                COMPRESSION_LEVEL_NONE
+                );
+        } else {
+            say "$zip_file: Skipping \"$attachment\", does not exist.";
+        }
     }
 
     my $jsonl_zip_member = $zip->addString( $output, 'mattermost_import.jsonl' );
