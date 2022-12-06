@@ -23,8 +23,8 @@ functionality used on Telegram.
 - [x] Support for replies
 - [x] Workaround for Telegram's export neither containing timezones
       nor DST flags.
-- [ ] Support for images
-- [ ] Support for videos
+- [x] Support for images
+- [x] Support for videos
 
 ### Low Priority
 
@@ -136,6 +136,36 @@ Requirements
 
 * [Mattermost](https://mattermost.com/) needs to be installed and the
   `mmctl` commandline tool needs to in `$PATH`.
+  
+  * For attachments to work properly, Mattermost is recommended to be
+    at least at version 7.5.1 at least. Versions before 7.5 were known
+    to crash on bulk imports using earlier (buggy) versions of
+    `telegram2mm` and it is not known if the fixed version still
+    causes these crashes.
+  
+  * Additionally, in case of media files or other attachments in the
+    Telegram export, `MaxFileSize` in
+    `/opt/mattermost/config/config.defaults.json` needs to be raised
+    to be higher than whatever `du -s ChatExport_[…]` says. In my case I
+    used ca. 1 GB as the `ChatExport_[…]` directory was around 750 MB:
+    
+    
+    ```
+    "MaxFileSize": 104857600,
+    ```
+
+  * If you don't use `http://127.0.0.1:8065/` for logging in with
+    `mmctl` (e.g. `mmctl auth login http://127.0.0.1:8065/ --name
+    local --username admin`), you might also need to raise the upper
+    limit of the size of `POST` requests in Nginx, too, something like
+    
+    ```
+    client_max_body_size 1G;
+    ```
+    
+    (I guess) in `/etc/nginx/conf.d/mattermost.conf`. You might want
+    to undo this later again to avoid users uploading huge files as
+    attachment to Mattermost posts. 😎
 
 * Besides [Perl](https://www.perl.org/) (at least version 5.10) and
   some modules from the [Perl
