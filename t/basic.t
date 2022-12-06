@@ -369,13 +369,13 @@ is_deeply( transform_msg(
 		       'user' => 'abc',
 		       'message' => 'A file',
 		       'create_at' => 1647324371000,
+		       'attachments' => [
+			   {
+			       'path' => 'files/example-image.png'
+			   }
+		       ],
+		       'props' => { 'attachments' => [] },
 		   },
-		   'props' => { 'attachments' => [] },
-		   'attachments' => [
-		       {
-			   'path' => 'files/example-image.png'
-		       }
-		   ]
 	       },
 	   'A message with file attachment is transformed as expected' );
 is_deeply( transform_msg(
@@ -400,13 +400,13 @@ is_deeply( transform_msg(
 		       'user' => 'abc',
 		       'message' => 'A photo',
 		       'create_at' => 1647324371000,
+		       'attachments' => [
+			   {
+			       'path' => 'photos/example-image.jpg'
+			   }
+		       ],
+		       'props' => { 'attachments' => [] },
 		   },
-		   'props' => { 'attachments' => [] },
-		   'attachments' => [
-		       {
-			   'path' => 'photos/example-image.jpg'
-		       }
-		   ]
 	       },
 	   'A message with photo attachment is transformed as expected' );
 
