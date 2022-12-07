@@ -117,6 +117,13 @@ Desktop](https://desktop.telegram.org/) application) and click on
 "Export Chat History" (or similar depending on localisation) and
 choose the "JSON" format.
 
+The export feature has been [introduced in Telegram Desktop 1.3.13 on
+27th of August 2018](https://telegram.org/blog/export-and-more).
+`telegram2mm` though has only been tested with Telegram Desktop
+versions 3.5.2, 3.6.0, 3.7.3 and 4.3.1 so far. We though assume that
+exports from all Telegram Desktop versions since at least 3.5.0 work
+fine with `telegram2mm`.
+
 
 Example Run
 -----------
