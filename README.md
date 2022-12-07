@@ -138,11 +138,12 @@ Requirements
   `mmctl` commandline tool needs to in `$PATH`.
   
   * For attachments to work properly, Mattermost is recommended to be
-    at least at version 7.5.1 at least. Versions before 7.5 were known
-    to be buggy and [to crash on bulk imports](https://forum.mattermost.com/t/import-from-jsonl-ignores-attachments-despite-no-error-messages-and-success-at-the-end/13472/7)
-    using earlier (buggy) versions of `telegram2mm` and it is not
-    known if the fixed version of `telegram2mm` still causes these
-    crashes.
+    at least at version 7.5.1 at least. Versions before 7.4.0 were
+    [known to be buggy](https://github.com/mattermost/mattermost-server/pull/20978)
+    and [to crash on bulk imports](https://forum.mattermost.com/t/import-from-jsonl-ignores-attachments-despite-no-error-messages-and-success-at-the-end/13472/7),
+    at least when using earlier (buggy) versions of `telegram2mm` and
+    it is not known if the fixed version of `telegram2mm` still causes
+    these crashes with Mattermost before 7.4.0.
   
   * Additionally, in case of media files or other attachments in the
     Telegram export, `MaxFileSize` in
