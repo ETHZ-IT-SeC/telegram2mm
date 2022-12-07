@@ -24,7 +24,11 @@ Telegram.
 - Support for replies
 - Support for attachments (images, videos, PDF, etc.)
 - Workaround for Telegram's export neither containing timezones
-  nor DST flags.
+  nor DST flags. (This has been fixed in Telegram exports recently by
+  also including the date in timezone independent Unix
+  timestamps. `telegram2mm` does though currently not rely on them and
+  hence still can import older Telegram exports without this
+  additional field.)
 
 ### Untested
 
