@@ -12,29 +12,29 @@ Mattermost's `mmctl import` set of commands (not the older `mattermost
 import` set of commands).
 
 
-TODO
-----
+State
+-----
 
-The tool is currently work in progress and might not yet support all
-functionality used on Telegram.
+The tool is currently working well (tested with Mattermost 7.5.1) but
+so far does not support all functionality which might be used on
+Telegram.
 
-### High Priority
+### Working
 
-- [x] Support for replies
-- [x] Workaround for Telegram's export neither containing timezones
-      nor DST flags.
-- [x] Support for images
-- [x] Support for videos
-
-### Low Priority
-
-- [ ] Support for reactions
-- [ ] Support for voice messages
-- [ ] Support for video messages
+- Support for replies
+- Support for attachments (images, videos, PDF, etc.)
+- Workaround for Telegram's export neither containing timezones
+  nor DST flags.
 
 ### Untested
 
-- [ ] Bots in groups
+- Bots in groups
+- Support for voice messages
+- Support for video messages
+
+### Not implemented
+
+- Support for reactions
 
 ### Not planned to be supported
 
