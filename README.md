@@ -138,7 +138,8 @@ Requirements
   `mmctl` commandline tool needs to in `$PATH`.
   
   * For attachments to work properly, Mattermost is recommended to be
-    at least at version 7.5.1 at least. Versions before 7.4.0 were
+    at least at version 7.5.1 at least as this version is tested and
+    known to work. Mattermost versions before 7.4.0 were
     [known to be buggy](https://github.com/mattermost/mattermost-server/pull/20978)
     and [to crash on bulk imports](https://forum.mattermost.com/t/import-from-jsonl-ignores-attachments-despite-no-error-messages-and-success-at-the-end/13472/7),
     at least when using earlier (buggy) versions of `telegram2mm` and
