@@ -109,9 +109,9 @@ assumed.
 
 The chat export file is what you get when you click on the
 per-group-chat menu (top right three dots menu in the [Telegram
-Desktop](https://desktop.telegram.org/) app) and click on "Export Chat
-History" (or similar depending on localisation) and choose the "JSON"
-format.
+Desktop](https://desktop.telegram.org/) application) and click on
+"Export Chat History" (or similar depending on localisation) and
+choose the "JSON" format.
 
 
 Example Run
@@ -190,6 +190,9 @@ Requirements
 
   * [File::Rename](https://metacpan.org/dist/File-Rename)
 
+* The [Telegram Desktop](https://desktop.telegram.org/) application
+  for making the export. Other Telegram clients or the web frontend
+  might work, too, but are not tested.
 
 Test Suite
 ----------
