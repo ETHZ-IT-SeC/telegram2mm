@@ -142,7 +142,7 @@ Requirements
     known to work. Mattermost versions before 7.4.0 were
     [known to be buggy](https://github.com/mattermost/mattermost-server/pull/20978)
     and [to crash on bulk imports](https://forum.mattermost.com/t/import-from-jsonl-ignores-attachments-despite-no-error-messages-and-success-at-the-end/13472/7),
-    at least when using earlier (buggy) versions of `telegram2mm` and
+    at least when using earlier (buggy) versions of `telegram2mm`. And
     it is not known if the fixed version of `telegram2mm` still causes
     these crashes with Mattermost before 7.4.0.
   
