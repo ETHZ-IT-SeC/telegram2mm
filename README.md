@@ -38,7 +38,8 @@ Telegram.
 
 ### Not implemented
 
-- Support for reactions
+- Support for emoji reactions (due to [emoji reactions are missing in
+  JSON exports](https://github.com/telegramdesktop/tdesktop/issues/16890).
 
 ### Not planned to be supported
 
