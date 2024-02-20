@@ -15,9 +15,9 @@ import` set of commands).
 State
 -----
 
-The tool is currently working well (tested with Mattermost 7.5.1) but
-so far does not support all functionality which might be used on
-Telegram.
+The tool is currently working well (tested with versions between
+Mattermost 7.5.1 and at least 9.5.1) but so far does not support all
+functionality which might be used on Telegram.
 
 ### Working
 
