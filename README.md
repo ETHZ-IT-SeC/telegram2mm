@@ -21,6 +21,7 @@ Telegram.
 
 ### Working
 
+- Support for importing Telegram supergroups into Mattermost channels.
 - Support for replies
 - Support for attachments (images, videos, PDF, etc.)
 - Workaround for Telegram's export neither containing timezones
@@ -32,6 +33,9 @@ Telegram.
 
 ### Untested
 
+- Importing non-private Supergroups. (Probably just works, but might
+  be non-trivial wrt. to user management.)
+- Importing Telegram Channels, Forums, Basic Groups, Megagroups or Gigagroups.
 - Bots in groups
 - Support for voice messages
 - Support for video messages
