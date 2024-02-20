@@ -46,12 +46,12 @@ functionality which might be used on Telegram.
   JSON exports](https://github.com/telegramdesktop/tdesktop/issues/16890).
 - Support for importing Telegram Personal Chats into Mattermost Direct
   Channels.
-- Pinned messages.
+- Channel creation
 
 ### Not planned to be supported
 
 - Import of users
-- Channel creation
+- Pinned messages.
 
 
 Synopsis
