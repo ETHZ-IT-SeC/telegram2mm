@@ -44,7 +44,8 @@ Telegram.
 
 - Support for emoji reactions (due to [emoji reactions are missing in
   JSON exports](https://github.com/telegramdesktop/tdesktop/issues/16890).
-- Support for importing personal 1:1 "direct" chats.
+- Support for importing Telegram Personal Chats into Mattermost Direct
+  Channels.
 
 ### Not planned to be supported
 
