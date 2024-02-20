@@ -42,7 +42,7 @@ functionality which might be used on Telegram.
 
 ### Not implemented
 
-- Support for emoji reactions (due to [emoji reactions are missing in
+- Support for emoji reactions—due to [emoji reactions are missing in
   JSON exports](https://github.com/telegramdesktop/tdesktop/issues/16890).
 - Support for importing Telegram Personal Chats into Mattermost Direct
   Channels.
