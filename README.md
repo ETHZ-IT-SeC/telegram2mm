@@ -40,6 +40,7 @@ Telegram.
 
 - Support for emoji reactions (due to [emoji reactions are missing in
   JSON exports](https://github.com/telegramdesktop/tdesktop/issues/16890).
+- Support for importing personal 1:1 "direct" chats.
 
 ### Not planned to be supported
 
