@@ -46,6 +46,7 @@ Telegram.
   JSON exports](https://github.com/telegramdesktop/tdesktop/issues/16890).
 - Support for importing Telegram Personal Chats into Mattermost Direct
   Channels.
+- Pinned messages.
 
 ### Not planned to be supported
 
