@@ -30,6 +30,8 @@ functionality which might be used on Telegram.
   timestamps. `telegram2mm` does though currently not rely on them and
   hence still can import older Telegram exports without this
   additional field.)
+- Support for importing Telegram Personal Chats into Mattermost Direct
+  Channels.
 
 ### Untested
 
@@ -44,8 +46,6 @@ functionality which might be used on Telegram.
 
 - Support for emoji reactions—due to [emoji reactions are missing in
   JSON exports](https://github.com/telegramdesktop/tdesktop/issues/16890).
-- Support for importing Telegram Personal Chats into Mattermost Direct
-  Channels.
 - Channel creation
 
 ### Not planned to be supported

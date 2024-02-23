@@ -39,7 +39,14 @@ use File::Rename;
 ### Constants / Hardcoded Telegram to Mattermost mappings
 ###
 
-my %tg2mm_type = ( 'message' => 'post' );
+my %tg2mm_type = (
+    'message' => 'post',
+    'personal_chat' => 'direct_chat',
+    'private_supergroup' => 'channel',
+    'public_supergroup' => 'channel',
+    'private_channel' => 'channel',
+    'public_channel' => 'channel',
+    );
 my @text_types_to_convert_to_plain_text =
     (qw(link bot_command mention email text_link phone hashtag cashtag bank_card));
 
@@ -124,14 +131,20 @@ sub transform_msg {
     die "Expected field \"type\" not found in ".encode_json($msg)
 	unless (exists($msg->{type}) and $msg->{type} ne '');
 
+    # Is this a 1:1 direct/personal chat?
+    my $direct_chat = $config->{chat_type} eq 'direct_chat';
+
     # Rename type if necessary.
     $msg->{type} = $tg2mm_type{$msg->{type}}
 	if exists $tg2mm_type{$msg->{type}};
 
     if ($msg->{type} eq "post") {
+        # Change type to direct_post if it is a direct chat.
+        $msg->{type} = 'direct_post' if $direct_chat;
+
 	# Simply return the existing object if the message already has
 	# been transformed due to being a reply.
-	if (exists($msg->{post}) and ref($msg->{post}) eq 'HASH') {
+	if (exists($msg->{$msg->{type}}) and ref($msg->{$msg->{type}}) eq 'HASH') {
 	    return $msg;
 	}
 
@@ -196,20 +209,25 @@ sub transform_msg {
 	}
 
 	# Add post subelement
-	$msg->{post} = {
-	  team      => $config->{import_into}{team},
-	  channel   => $config->{import_into}{channel},
+	$msg->{$msg->{type}} = {
 	  message   => $msg->{text},
 	  user      => $config->{users}{$msg->{from_id}},
 	  create_at => date2epoch($msg->{date}),
 	};
 
+        if ($direct_chat) {
+            $msg->{$msg->{type}}{channel_members} = [values %{$config->{users}}];
+        } else {
+            $msg->{$msg->{type}}{channel} = $config->{import_into}{channel};
+            $msg->{$msg->{type}}{team}    = $config->{import_into}{team};
+        }
+
 	if (exists($msg->{file}) and
 	    not (exists($msg->{media_type}) and $msg->{media_type} eq 'sticker')) {
-	    $msg->{post}{attachments} //= [];
-	    $msg->{post}{props} //= { attachments => [] },
+	    $msg->{$msg->{type}}{attachments} //= [];
+	    $msg->{$msg->{type}}{props} //= { attachments => [] },
 	    # Add metadata to message object
-	    push(@{$msg->{post}{attachments}}, {
+	    push(@{$msg->{$msg->{type}}{attachments}}, {
 		'path' => $msg->{file}
 	    });
 	    # Remember file to being added to ZIP file later
@@ -217,10 +235,10 @@ sub transform_msg {
 	}
 
 	if (exists($msg->{photo})) {
-	    $msg->{post}{attachments} //= [];
-	    $msg->{post}{props} //= { attachments => [] },
+	    $msg->{$msg->{type}}{attachments} //= [];
+	    $msg->{$msg->{type}}{props} //= { attachments => [] },
 	    # Add metadata to message object
-	    push(@{$msg->{post}{attachments}}, {
+	    push(@{$msg->{$msg->{type}}{attachments}}, {
 		'path' => $msg->{photo}
 	    });
 	    # Remember file to being added to ZIP file later
@@ -264,20 +282,23 @@ sub sanitize_attachment_file_name {
 
 sub attach_replies {
     my ($config, $msg, $replies, $attachments) = @_;
-    return unless $msg->{type} eq 'post';
+    return unless (
+        $msg->{type} eq 'post' or
+        $msg->{type} eq 'direct_post'
+        );
 
     my $my_replies = $replies->{$msg->{id}};
-    $msg->{post}{replies} = [];
+    $msg->{$msg->{type}}{replies} = [];
 
     foreach my $reply (@$my_replies) {
 	$reply = transform_msg($config, $reply, $replies, $attachments);
 	# Make a reply out of the message
-	$reply = $reply->{post};
+	$reply = $reply->{$msg->{type}};
 	delete($reply->{channel});
 	delete($reply->{team});
 
 	# Attach the reply to the message
-	push(@{$msg->{post}{replies}}, $reply);
+	push(@{$msg->{$msg->{type}}{replies}}, $reply);
 
 	if (exists($reply->{id}) and exists($replies->{$reply->{id}})) {
 	    attach_replies($config, $msg, $replies->{$reply->{id}});
@@ -334,6 +355,8 @@ sub recursively_find_reply_to_message_id {
 sub tg_json_to_mm_jsonl {
     my ($config, $tg_json, $attachments) = @_;
     my $tg = decode_json($tg_json);
+    $config->{chat_type} =
+        ($tg->{type} eq 'personal_chat' ? 'direct_chat' : 'post');
 
     # First convert to JSON Lines (aka JSONL)
     my @messages = @{$tg->{messages}};
