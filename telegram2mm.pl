@@ -433,7 +433,7 @@ sub main {
 					DIR => $tmpdir,
 					SUFFIX => ".zip",
 					# Just for debugging
-					UNLINK => 0,
+					UNLINK => 1,
     );
 
     # Read JSON from whereever it comes from (slurp mode)
