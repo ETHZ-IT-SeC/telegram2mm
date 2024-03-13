@@ -193,6 +193,10 @@ sub transform_msg {
 			     exists($text_element->{text}) and
 			     $text_element->{type} eq 'mention_name') {
 			'@'.$config->{users}{'user'.$text_element->{user_id}};
+		    } elsif (exists($text_element->{type}) and
+			     exists($text_element->{text}) and
+			     $text_element->{type} eq 'blockquote') {
+			"\n> ".$text_element->{text}."\n";
 		    } else {
 			die "Yet unsupported message format (no type, no text or known type): ".Dumper($msg);
 		    }
