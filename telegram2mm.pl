@@ -198,7 +198,8 @@ sub transform_msg {
 			     $text_element->{type} eq 'blockquote') {
 			"\n> ".$text_element->{text}."\n";
 		    } else {
-			die "Yet unsupported message format (no type, no text or known type): ".Dumper($msg);
+			die "Yet unsupported message format (no type, no text or unknown type \"".
+			    $text_element->{type}."\"): ".Dumper($msg);
 		    }
 		# if $_ is no reference
 		} elsif (ref($text_element) eq '') {
