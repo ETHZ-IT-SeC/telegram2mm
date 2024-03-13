@@ -34,6 +34,7 @@ use DateTime::TimeZone;
 use DateTime::Format::ISO8601;
 use Data::Dumper;
 use File::Rename;
+use File::Spec::Functions qw(rel2abs);
 
 ###
 ### Constants / Hardcoded Telegram to Mattermost mappings
@@ -424,9 +425,7 @@ sub main {
     my $tg_json_file = shift;
     my $tg_json_mojo = Mojo::File->new($tg_json_file);
     my @attachments = ();
-    my $pwd = `pwd`; chomp($pwd);
-    $config->{attachment_base_dir} = $pwd.'/'.$tg_json_mojo->dirname;
-
+    $config->{attachment_base_dir} = rel2abs($tg_json_mojo->dirname);
 
     # Temporary Output ZIP file
     my $tmpdir = $ENV{TMPDIR} // "/tmp";
